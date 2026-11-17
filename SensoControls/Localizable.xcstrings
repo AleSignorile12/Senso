@@ -1,0 +1,9 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Opens Senso and starts listening for the pour." : {},
+    "Opens Senso and starts listening." : {},
+    "Start pouring" : {}
+  },
+  "version" : "1.0"
+}

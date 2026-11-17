@@ -1,0 +1,51 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%lld percent full" : {
+
+    },
+    "Done. %lld percent full." : {
+
+    },
+    "FILL" : {
+
+    },
+    "Fill up" : {
+
+    },
+    "iPhone not connected" : {
+
+    },
+    "No fill estimate yet" : {
+
+    },
+    "Open Senso on iPhone" : {
+
+    },
+    "Ready to pour?" : {
+
+    },
+    "Starts listening on your iPhone. Turn the Digital Crown to change the stop alert." : {
+
+    },
+    "Stop" : {
+
+    },
+    "Stop alert at %lld percent" : {
+
+    },
+    "Stop at %lld%%" : {
+
+    },
+    "Tap to pour again" : {
+
+    },
+    "Tap to pour again." : {
+
+    },
+    "UP!" : {
+
+    }
+  },
+  "version" : "1.0"
+}

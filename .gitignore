@@ -1,0 +1,32 @@
+# macOS
+.DS_Store
+
+# Xcode per-user state and build output
+xcuserdata/
+*.xcuserstate
+build/
+DerivedData/
+*.xcarchive
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Training audio: about 6 GB of FSD50K clips. Rebuild it with MLTraining/PrepareExternalData.swift.
+MLTraining/Dataset/
+MLTraining/TestDataset/
+MLTraining/VisionDataset/
+MLTraining/MotionDataset/
+
+# Downloaded public datasets: keep only the attribution and the clip manifest (licence, uploader, title)
+MLTraining/External/*
+!MLTraining/External/ATTRIBUTION.md
+!MLTraining/External/fsd50k/
+MLTraining/External/fsd50k/*
+!MLTraining/External/fsd50k/manifest.csv
+
+# Training output. The shipped model and its credits live in SensoApp/ML/.
+# (v1 used non-commercial data and v2 is superseded; neither belongs in the repo.)
+# The folder itself stays (PrepareExternalData.swift writes into it but doesn't create it).
+MLTraining/Models/*
+!MLTraining/Models/.gitkeep
+MLTraining/evaluate-fill

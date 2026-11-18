@@ -33,7 +33,7 @@ Put your iPhone next to the cup, tap Fill Up, or say "Start pouring with Senso",
 
 Private by design: sound and camera images are analysed on your iPhone and never leave it. Senso has no account, no ads and no tracking, and collects no data.
 
-Senso is an aid, not a guarantee. The level can be wrong, especially with cups you haven't calibrated, in noisy rooms or with thick liquids. Keep a finger on the rim when you can, and take extra care with hot drinks.
+Senso is an aid, not a guarantee. The level can be wrong, especially with cups you haven't calibrated, in noisy rooms or with thick liquids. Take extra care with hot drinks.
 
 **Support URL:** your hosted page (see README.md)
 **Privacy Policy URL:** your hosted privacy-policy.md

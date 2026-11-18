@@ -1,3 +1,4 @@
+import AVFoundation
 import Foundation
 import SwiftUI
 import Testing
@@ -96,6 +97,60 @@ struct FillEstimationTests {
         for index in 0..<20 { recorder.update(pitch: nil, isPouring: true, time: Double(index) * 0.05, frameSeconds: 0.05) }
         #expect(recorder.finish() == nil)
     }
+
+    @Test func `a false start long before the pour doesn't cost it its level`() {
+        let estimator = FillEstimator(calibration: nil)
+        let hop = 0.05
+        for index in 0..<20 { _ = estimator.update(pitch: nil, isPouring: true, time: Double(index) * hop, frameSeconds: hop) }
+        for index in 20..<120 { _ = estimator.update(pitch: nil, isPouring: false, time: Double(index) * hop, frameSeconds: hop) }
+        let pitch = ResonancePitch(hz: 1_000, riseRate: 0.1, strength: 5)
+        #expect(estimator.update(pitch: pitch, isPouring: true, time: 6, frameSeconds: hop) != nil)
+    }
+
+    @Test func `the lookback starts just before the sound and ignores older noise`() throws {
+        var lookback = PourLookback()
+        for index in 0..<200 {
+            let time = Double(index) * 0.05
+            lookback.add(pitch: nil, isPouring: time >= 8, time: time, frameSeconds: 0.05)
+        }
+        let first = try #require(lookback.framesOfThisPour(now: 9.95).first)
+        #expect(abs(first.time - (8 - PourLookback.classifierDelaySeconds)) < 0.06)
+    }
+
+    @Test func `the lookback never reaches further back than its limit`() throws {
+        var lookback = PourLookback()
+        for index in 0..<200 { lookback.add(pitch: nil, isPouring: true, time: Double(index) * 0.05, frameSeconds: 0.05) }
+        let first = try #require(lookback.framesOfThisPour(now: 9.95).first)
+        #expect(abs(first.time - (9.95 - PourLookback.maximumSeconds)) < 0.06)
+    }
+
+    /// Feeds silence, so no pitch is found and the level comes from pour time alone.
+    private func feed(_ tracker: AcousticFillTracker, seconds: Double) throws {
+        let format = try #require(AVAudioFormat(standardFormatWithSampleRate: rate, channels: 1))
+        let frames = AVAudioFrameCount(seconds * rate)
+        let buffer = try #require(AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frames))
+        buffer.frameLength = frames
+        try #require(buffer.floatChannelData)[0].update(repeating: 0, count: Int(frames))
+        tracker.analyze(buffer)
+    }
+
+    private nonisolated final class LastLevel: @unchecked Sendable {
+        var fraction: Double?
+    }
+
+    @Test func `confirming a pour keeps the water poured before it was noticed`() throws {
+        let last = LastLevel()
+        let tracker = AcousticFillTracker(calibration: FillCalibration(emptyHz: nil, fullHz: nil, fillSeconds: 10), calibrating: false) { reading, _ in
+            last.fraction = reading?.fraction
+        }
+        try feed(tracker, seconds: 2)   // The room before the pour must not count.
+        tracker.setPouringConfidence(0.8)
+        try feed(tracker, seconds: 0.1)
+        _ = tracker.restartPour()
+        try feed(tracker, seconds: 1)
+        let expected = (PourLookback.classifierDelaySeconds + 0.1 + 1) / 10
+        #expect(abs(try #require(last.fraction) - expected) < 0.025)
+    }
 }
 
 // MARK: - Engine
@@ -131,11 +186,11 @@ struct PourEngineTests {
     @Test func `a cup in view lets a slightly weaker sound start the pour`() {
         let (engine, events) = makeEngine()
         engine.begin()
-        engine.ingest(reading(0.6, at: 0))
-        #expect(engine.state == .preparing, "0.6 alone isn't enough")
+        engine.ingest(reading(0.67, at: 0))
+        #expect(engine.state == .preparing, "0.67 alone isn't enough")
         engine.cupSeen()
         engine.cupSeen()
-        engine.ingest(reading(0.6, at: 0.25))
+        engine.ingest(reading(0.67, at: 0.25))
         #expect(engine.state == .pouring)
         #expect(events() == [.listening, .cupFound, .pouringDetected], "cup found is said once")
         engine.end()
@@ -176,6 +231,29 @@ struct PourEngineTests {
         engine.ingest(nil, at: .now.addingTimeInterval(2))
         for second in stride(from: 4.0, through: 7.5, by: 0.25) { engine.ingest(reading(0.9, at: second)) }
         #expect(events().filter { $0 == .levelUnknown }.count == 2, "warned again after the level came back and was lost")
+    }
+
+    @Test func `a false start doesn't make the real pour warn at once`() {
+        let (engine, events) = makeEngine()
+        engine.begin()
+        engine.ingest(reading(0.9, at: 0))
+        engine.ingest(reading(0.1, at: 0.25))
+        engine.ingest(reading(0.1, at: 2))
+        #expect(engine.state == .preparing)
+        engine.ingest(reading(0.9, at: 20))
+        engine.ingest(reading(0.9, at: 20.25))
+        #expect(!events().contains(.levelUnknown))
+    }
+
+    @Test func `sounds Senso is unsure about must last longer before the level warning`() {
+        let (engine, events) = makeEngine()
+        engine.begin()
+        engine.ingest(reading(0.9, at: 0))
+        for second in stride(from: 0.25, through: 3.75, by: 0.25) { engine.ingest(reading(0.45, at: second)) }
+        #expect(engine.state == .pouring)
+        #expect(!events().contains(.levelUnknown), "3.75 s of weak sound isn't enough")
+        engine.ingest(reading(0.45, at: 4))
+        #expect(events().filter { $0 == .levelUnknown }.count == 1, "but a pour with no level must still be warned about")
     }
 
     @Test func `a jump past several milestones says only the highest`() {

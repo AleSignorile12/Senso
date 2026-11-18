@@ -149,7 +149,7 @@ Pure logic on the main actor: no audio, no UI. States: `ready → preparing → 
 
 ### 8. Camera help (`SensoApp/Camera/CameraFraming.swift`)
 
-Opt-in. Vision's built-in image classifier (`VNClassifyImageRequest`) checks for a cup-like object, and objectness saliency finds where it is. The result becomes a spoken framing cue before the pour, and a confirmed cup lets a slightly weaker pour sound start it (0.55 instead of 0.7). When neither is sure, the cue is "no cup", never a guess. The camera never estimates fill. While it runs, it also samples the picture's colours into a 3×3 grid for the pouring screen's background, capped so white text keeps at least 7:1 contrast.
+Opt-in. Vision's built-in image classifier (`VNClassifyImageRequest`) checks for a cup-like object, and objectness saliency finds where it is. The result becomes a spoken framing cue before the pour, and a confirmed cup lets a slightly weaker pour sound start it (0.65 instead of 0.7). When neither is sure, the cue is "no cup", never a guess. The camera never estimates fill. While it runs, it also samples the picture's colours into a 3×3 grid for the pouring screen's background, capped so white text keeps at least 7:1 contrast.
 
 ---
 

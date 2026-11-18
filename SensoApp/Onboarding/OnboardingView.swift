@@ -30,7 +30,7 @@ struct OnboardingView: View {
                     row("hand.raised.fill", "Private by design",
                         "Senso will ask to use the microphone. Sound is analysed on your iPhone and never saved.")
                     row("exclamationmark.triangle.fill", "An aid, not a guarantee",
-                        "Keep a finger on the rim when you can, and take extra care with hot drinks.")
+                        "Take extra care with hot drinks.")
                 }
             }
             .padding(.horizontal, 32)

@@ -483,7 +483,7 @@ struct PouringView: View {
         case .preparing: "Start pouring when you’re ready."
         case .approachingTarget: "Until you hear the alert."
         case .uncertain: "Keep the phone next to the cup."
-        case .pouring where fillPercent == nil: "Can’t hear the level yet. Check with your finger."
+        case .pouring where fillPercent == nil: "Can’t hear the level yet."
         default: nil
         }
     }

@@ -16,7 +16,7 @@ nonisolated enum PourEvent: Sendable, Equatable {
     case listening             // session started
     case cupFound              // the optional camera saw a cup: pouring sounds are trusted a little sooner
     case pouringDetected
-    case levelUnknown          // pouring, but no level estimate for a while: the user must check by touch
+    case levelUnknown          // pouring, but no level estimate for a while: the stop alert can't come
     case pouringPaused         // flow stopped before the target
     case milestone(Int)        // fill crossed 25, 50, 75 or 85 %
     case approachingTarget     // entered the high-alert band
@@ -53,20 +53,36 @@ final class PourEstimationEngine {
     static let startPouringConfidence = 0.7
     static let startPouringConfidenceWithTilt = 0.45
     /// A cup in the camera's view makes a pour more likely: a slightly weaker sound is enough to start.
-    static let startPouringConfidenceWithCup = 0.55
+    /// On held-out clips 0.65 found as many pours as 0.55, with 1.65 false starts per minute instead of 2.4.
+    static let startPouringConfidenceWithCup = 0.65
     static let keepPouringConfidence = 0.4
     /// How long the classifier must say "not pouring" before the pour counts as paused.
     static let pauseSeconds = 1.5
+    /// A start counts as a real pour after this much confident sound, or this much sound of any strength.
+    /// Until then nothing about the level is said, and if the sound fades the start is forgotten.
+    static let confirmPourConfidence = 0.55
+    static let confirmPourSeconds = 1.0
+    static let confirmPourAnySeconds = 6.0
     /// Fill estimates older than this are ignored.
     static let staleFillSeconds = 1.0
-    /// Pouring this long without a level estimate: say so, the stop alert can't come.
+    /// Confident pouring for this long without a level estimate: say so, the stop alert can't come.
     static let levelUnknownSeconds = 3.0
+    static let levelUnknownConfidence = 0.55
+    /// Weaker sounds must last longer, as many aren't pours. On held-out clips this cut the warnings during
+    /// other sounds from 0.33 to 0.25 a minute, and no pour without a level lost its warning.
+    static let levelUnknownUnsureSeconds = 4.0
 
     @ObservationIgnored var onEvent: (PourEvent) -> Void = { _ in }
     @ObservationIgnored private var announced: Set<Int> = []
     @ObservationIgnored private var quietSince: Date?
     @ObservationIgnored private var lastFill: (reading: FillReading, time: Date)?
+    @ObservationIgnored private var pourConfirmed = false
+    @ObservationIgnored private var unconfirmedSince: Date?
+    @ObservationIgnored private var lastUnconfirmedReading: Date?
+    @ObservationIgnored private var unconfirmedConfidentSeconds = 0.0
     @ObservationIgnored private var levelMissingSince: Date?
+    @ObservationIgnored private var lastLevelMissingReading: Date?
+    @ObservationIgnored private var confidentSecondsWithoutLevel = 0.0
     @ObservationIgnored private var warnedLevelMissing = false
 
     // MARK: Session
@@ -80,7 +96,11 @@ final class PourEstimationEngine {
         lastFill = nil
         cupFound = false
         pourStarted = false
+        pourConfirmed = false
+        clearUnconfirmedPour()
         levelMissingSince = nil
+        lastLevelMissingReading = nil
+        confidentSecondsWithoutLevel = 0
         warnedLevelMissing = false
         onEvent(.listening)
     }
@@ -139,17 +159,27 @@ final class PourEstimationEngine {
                 onEvent(.pouringPaused)
             }
         }
-        // Without a level the stop alert can't come, so the user must hear that and check by touch.
+        if pourStarted, !pourConfirmed { updatePourConfirmation(reading) }
+        // Without a level the stop alert can't come, so the user must hear that.
         if (state == .pouring || state == .approachingTarget), fillPercent == nil, !calibrating {
             let since = levelMissingSince ?? reading.timestamp
             levelMissingSince = since
-            if reading.timestamp.timeIntervalSince(since) >= Self.levelUnknownSeconds, !warnedLevelMissing {
+            if let last = lastLevelMissingReading, reading.pouringConfidence >= Self.levelUnknownConfidence {
+                confidentSecondsWithoutLevel += reading.timestamp.timeIntervalSince(last)
+            }
+            lastLevelMissingReading = reading.timestamp
+            let waitedLongEnough = confidentSecondsWithoutLevel >= Self.levelUnknownSeconds
+                || reading.timestamp.timeIntervalSince(since) >= Self.levelUnknownUnsureSeconds
+            if waitedLongEnough, !warnedLevelMissing {
                 warnedLevelMissing = true
                 onEvent(.levelUnknown)
             }
-        } else if fillPercent != nil {
+        } else {
+            // Only unbroken pouring counts, or a brief false start would warn the moment the real pour begins.
             levelMissingSince = nil
-            warnedLevelMissing = false
+            lastLevelMissingReading = nil
+            confidentSecondsWithoutLevel = 0
+            if fillPercent != nil { warnedLevelMissing = false }
         }
     }
 
@@ -169,6 +199,8 @@ final class PourEstimationEngine {
         let percent = Int((min(max(reading.fraction, 0), 1) * 100).rounded())
         fillPercent = percent
         fillMethod = reading.method
+        // A sound that may not be a pour must not say "Stop! Glass is full."
+        guard pourConfirmed else { return }
 
         // Only the highest milestone just crossed: a jump from 20 to 55 says "50", not "25" then "50" late.
         let crossed = PourThresholds.voiceOverMilestones.filter { $0 < targetPercent && percent >= $0 && !announced.contains($0) }
@@ -188,6 +220,36 @@ final class PourEstimationEngine {
             state = .complete
             onEvent(.complete)
         }
+    }
+
+    private func updatePourConfirmation(_ reading: SensorReading) {
+        guard state == .pouring || state == .approachingTarget else {
+            // The sound faded before it proved to be a pour: forget it, so the real pour starts from 0.
+            pourStarted = false
+            fillPercent = nil
+            fillMethod = nil
+            lastFill = nil
+            announced = []
+            clearUnconfirmedPour()
+            return
+        }
+        let since = unconfirmedSince ?? reading.timestamp
+        unconfirmedSince = since
+        if let last = lastUnconfirmedReading, reading.pouringConfidence >= Self.confirmPourConfidence {
+            unconfirmedConfidentSeconds += reading.timestamp.timeIntervalSince(last)
+        }
+        lastUnconfirmedReading = reading.timestamp
+        if unconfirmedConfidentSeconds >= Self.confirmPourSeconds
+            || reading.timestamp.timeIntervalSince(since) >= Self.confirmPourAnySeconds {
+            pourConfirmed = true
+            clearUnconfirmedPour()
+        }
+    }
+
+    private func clearUnconfirmedPour() {
+        unconfirmedSince = nil
+        lastUnconfirmedReading = nil
+        unconfirmedConfidentSeconds = 0
     }
 
     private var isHighAlert: Bool {

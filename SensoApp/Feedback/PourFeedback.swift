@@ -28,7 +28,7 @@ final class PourFeedback {
             say(String(localized: "Listening. Start pouring when you're ready."))
         case .cupFound: say(String(localized: "Cup found."))
         case .levelUnknown:
-            say(String(localized: "I can't hear the level. I can't warn you in time. Check with your finger."), urgent: true)
+            say(String(localized: "I can't hear the level. I can't warn you in time."), urgent: true)
         case .pouringDetected: say(String(localized: "Pouring."))
         case .pouringPaused: say(String(localized: "Paused."))
         case .milestone(let percent): say(String(localized: "\(percent) percent."))

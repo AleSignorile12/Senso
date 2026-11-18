@@ -99,7 +99,7 @@ final class AcousticPipeline {
         fillTracker?.finishCalibration()
     }
 
-    /// The cup was just found: forget anything heard before, so the level counts from 0 from now on.
+    /// The pour was just confirmed: the level counts from the start of this sound, not from earlier noise.
     func restartFill() {
         fillPour = fillTracker?.restartPour() ?? fillPour
         fill = nil
@@ -226,6 +226,7 @@ nonisolated final class AcousticFillTracker: Sendable {
         var frameCount = 0
         var lastSent: FillReading?
         var pour = 0
+        var lookback = PourLookback()
     }
 
     private let state: Mutex<State>
@@ -236,12 +237,18 @@ nonisolated final class AcousticFillTracker: Sendable {
         self.onFill = onFill
     }
 
-    /// Starts the pour's level (and a calibration recording) over. The resonance tracker keeps what it
-    /// learned about the room's fixed peaks.
+    /// Starts the pour's level (and a calibration recording) over from the start of the current sound. The
+    /// resonance tracker keeps what it learned about the room's fixed peaks.
     func restartPour() -> Int {
         state.withLock { state in
             state.estimator.reset()
             if state.recorder != nil { state.recorder = CalibrationRecorder() }
+            for frame in state.lookback.framesOfThisPour(now: state.time) {
+                state.recorder?.update(pitch: frame.pitch, isPouring: true, time: frame.time, frameSeconds: frame.seconds)
+                _ = state.estimator.update(pitch: frame.pitch, isPouring: true, time: frame.time, frameSeconds: frame.seconds)
+            }
+            // The engine confirmed a pour, so keep counting down to its keep-pouring level from here.
+            state.isPouring = true
             state.lastSent = nil
             state.pour += 1
             return state.pour
@@ -265,6 +272,7 @@ nonisolated final class AcousticFillTracker: Sendable {
                 state.tracker = ResonanceTracker(sampleRate: sampleRate)
                 state.estimator.reset()
                 state.pending = []
+                state.lookback = PourLookback()
             }
             guard let tracker = state.tracker else { return ([], state.pour) }
             state.pending.append(contentsOf: samples)
@@ -276,6 +284,7 @@ nonisolated final class AcousticFillTracker: Sendable {
                 state.time += frameSeconds
                 // Track every frame so fixed room resonances are learned before the pour starts.
                 let pitch = tracker.track(frame)
+                state.lookback.add(pitch: pitch, isPouring: state.isPouring, time: state.time, frameSeconds: frameSeconds)
                 let usablePitch = state.isPouring ? pitch : nil
                 state.recorder?.update(pitch: usablePitch, isPouring: state.isPouring, time: state.time, frameSeconds: frameSeconds)
                 let reading = state.estimator.update(pitch: usablePitch, isPouring: state.isPouring, time: state.time, frameSeconds: frameSeconds)

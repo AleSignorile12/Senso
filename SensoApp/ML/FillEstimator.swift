@@ -194,7 +194,6 @@ nonisolated final class FillEstimator {
     static let minimumTrackedSeconds = 2.0
 
     var calibration: FillCalibration?
-    private var pourStart: Double?
     private var pouringSeconds = 0.0
     /// Empty-cup period estimates: each early pitch extrapolated back to the pour start along its rise rate.
     private var emptyPeriods: [Double] = []
@@ -210,7 +209,6 @@ nonisolated final class FillEstimator {
     init(calibration: FillCalibration?) { self.calibration = calibration }
 
     func reset() {
-        pourStart = nil
         pouringSeconds = 0
         emptyPeriods = []
         recentFractions = []
@@ -223,13 +221,10 @@ nonisolated final class FillEstimator {
     func update(pitch: ResonancePitch?, isPouring: Bool, time: Double, frameSeconds: Double) -> FillReading? {
         guard isPouring || pouringSeconds > 0 else { return nil }
         isPouringNow = isPouring
-        if isPouring {
-            if pourStart == nil { pourStart = time }
-            pouringSeconds += frameSeconds
-        }
+        if isPouring { pouringSeconds += frameSeconds }
 
         var reading: FillReading?
-        if let pitch, isPouring, let pourStart, let pitchReading = pitchFraction(pitch, pourStart: pourStart, time: time) {
+        if let pitch, isPouring, let pitchReading = pitchFraction(pitch) {
             lastPitchReading = (pouringSeconds, pitchReading)
             tracked.append((pouringSeconds, pitchReading.fraction))
             reading = pitchReading
@@ -265,10 +260,10 @@ nonisolated final class FillEstimator {
                            ratePerSecond: isPouringNow ? fit.slope : 0, method: last.reading.method)
     }
 
-    private func pitchFraction(_ pitch: ResonancePitch, pourStart: Double, time: Double) -> FillReading? {
+    private func pitchFraction(_ pitch: ResonancePitch) -> FillReading? {
         let period = 1 / pitch.hz
-        let sincePourStart = time - pourStart
-        if sincePourStart <= 3 { emptyPeriods.append(period * (1 + pitch.riseRate * sincePourStart)) }
+        // Pouring time: the cup doesn't fill during a pause, and a false start mustn't use up these 3 s.
+        if pouringSeconds <= 3 { emptyPeriods.append(period * (1 + pitch.riseRate * pouringSeconds)) }
         let pitchCalibration = calibration?.hasPitch == true ? calibration : nil
         let fullPeriod = 1 / (pitchCalibration?.fullHz ?? Self.uncalibratedFullHz)
         guard let emptyPeriod = pitchCalibration?.emptyHz.map({ 1 / $0 }) ?? (emptyPeriods.isEmpty ? nil : median(emptyPeriods)),
@@ -282,6 +277,40 @@ nonisolated final class FillEstimator {
         return FillReading(fraction: median(recentFractions), uncertainty: calibrated ? 0.1 : 0.25,
                            ratePerSecond: pitch.riseRate * period / (emptyPeriod - fullPeriod),
                            method: calibrated ? .pitchCalibrated : .pitchUncalibrated)
+    }
+}
+
+// MARK: - The start of a pour
+
+/// The frames just heard, so the start of a pour isn't lost.
+///
+/// The classifier first says "pouring" about 0.6 s after the water starts (median on the held-out pours), and
+/// the engine may wait longer for a confident reading. Counting only from then would make the level read low
+/// and the stop alert come late.
+nonisolated struct PourLookback {
+    struct Frame: Equatable {
+        var pitch: ResonancePitch?
+        var time: Double
+        var seconds: Double
+    }
+
+    static let classifierDelaySeconds = 0.6
+    /// Limits how much sound before the confirmation can count, in case it was room noise and not the pour.
+    static let maximumSeconds = 3.0
+
+    private var frames: [Frame] = []
+    private var soundStart: Double?
+
+    mutating func add(pitch: ResonancePitch?, isPouring: Bool, time: Double, frameSeconds: Double) {
+        soundStart = isPouring ? soundStart ?? time : nil
+        frames.append(Frame(pitch: pitch, time: time, seconds: frameSeconds))
+        frames.removeAll { $0.time <= time - Self.maximumSeconds }
+    }
+
+    /// The frames from shortly before the classifier first heard the current sound.
+    func framesOfThisPour(now: Double) -> [Frame] {
+        let start = max((soundStart ?? now) - Self.classifierDelaySeconds, now - Self.maximumSeconds)
+        return frames.filter { $0.time > start }
     }
 }
 

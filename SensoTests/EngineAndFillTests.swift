@@ -175,6 +175,63 @@ struct PourEngineTests {
         return (engine, { events })
     }
 
+    /// Enough confident sound for the start to count as a real pour.
+    func confirmPour(_ engine: PourEstimationEngine) {
+        engine.ingest(reading(0.9, at: 0))
+        engine.ingest(reading(0.9, at: PourEstimationEngine.confirmPourSeconds))
+    }
+
+    @Test func `a sound that isn't confirmed as a pour can't say the glass is full`() {
+        let (engine, events) = makeEngine()
+        engine.begin()
+        engine.ingest(reading(0.9, at: 0))
+        engine.ingest(fill(0.95))
+        #expect(engine.state == .pouring)
+        #expect(events() == [.listening, .pouringDetected])
+    }
+
+    @Test func `a false start that fades is forgotten, so the real pour starts from 0`() {
+        let (engine, _) = makeEngine()
+        engine.begin()
+        engine.ingest(reading(0.9, at: 0))
+        engine.ingest(fill(0.6))
+        #expect(engine.fillPercent == 60)
+        engine.ingest(reading(0.1, at: 0.25))
+        engine.ingest(reading(0.1, at: 2))
+        #expect(engine.state == .preparing)
+        #expect(!engine.pourStarted)
+        #expect(engine.fillPercent == nil)
+        engine.ingest(fill(0.6))
+        #expect(engine.fillPercent == nil, "the old estimate no longer counts")
+        engine.ingest(reading(0.9, at: 20))
+        #expect(engine.pourStarted, "a new start restarts the level")
+    }
+
+    @Test func `a confirmed pour keeps its level through a pause`() {
+        let (engine, _) = makeEngine()
+        engine.begin()
+        confirmPour(engine)
+        engine.ingest(fill(0.4, rate: 0))
+        engine.ingest(reading(0.1, at: 1.25))
+        engine.ingest(reading(0.1, at: 2.8))
+        #expect(engine.state == .preparing)
+        #expect(engine.pourStarted)
+        #expect(engine.fillPercent == 40)
+    }
+
+    @Test func `a long weak pour is still confirmed and can stop`() {
+        let (engine, events) = makeEngine()
+        engine.targetPercent = 90
+        engine.begin()
+        engine.ingest(reading(0.9, at: 0))
+        for second in stride(from: 0.25, through: PourEstimationEngine.confirmPourAnySeconds, by: 0.25) {
+            engine.ingest(reading(0.45, at: second))
+        }
+        engine.ingest(fill(0.95))
+        #expect(engine.state == .complete)
+        #expect(events().last == .complete)
+    }
+
     @Test func `a pour starts by sound alone, with no camera`() {
         let (engine, events) = makeEngine()
         engine.begin()
@@ -212,9 +269,9 @@ struct PourEngineTests {
         let (engine, events) = makeEngine()
         engine.targetPercent = 90
         engine.begin()
-        engine.ingest(reading(0.9, at: 0))
-        engine.ingest(reading(0.1, at: 1))
-        engine.ingest(reading(0.1, at: 2.6))
+        confirmPour(engine)
+        engine.ingest(reading(0.1, at: 1.25))
+        engine.ingest(reading(0.1, at: 2.8))
         #expect(engine.state == .preparing, "the classifier lost the pour")
         engine.ingest(fill(0.95))
         #expect(engine.state == .complete)
@@ -259,7 +316,7 @@ struct PourEngineTests {
     @Test func `a jump past several milestones says only the highest`() {
         let (engine, events) = makeEngine()
         engine.begin()
-        engine.ingest(reading(0.9, at: 0))
+        confirmPour(engine)
         engine.ingest(fill(0.55, rate: 0))
         #expect(events().filter { if case .milestone = $0 { true } else { false } } == [.milestone(50)])
     }
@@ -285,7 +342,7 @@ struct PourEngineTests {
     @Test func `milestones are announced once and the alert band starts at 70`() {
         let (engine, events) = makeEngine()
         engine.begin()
-        engine.ingest(reading(0.9, at: 0))
+        confirmPour(engine)
         for fraction in [0.2, 0.26, 0.3, 0.26, 0.51, 0.72] { engine.ingest(fill(fraction, rate: 0)) }
         #expect(engine.fillPercent == 72)
         #expect(engine.state == .approachingTarget)
@@ -296,7 +353,7 @@ struct PourEngineTests {
         let (engine, events) = makeEngine()
         engine.targetPercent = 90
         engine.begin()
-        engine.ingest(reading(0.9, at: 0))
+        confirmPour(engine)
         // 0.75 + 0.1 × 0.9 + 0.1 / 2 = 0.89: not yet.
         engine.ingest(fill(0.75))
         #expect(engine.state == .approachingTarget)

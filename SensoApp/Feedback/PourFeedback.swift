@@ -1,7 +1,6 @@
 // PourFeedback.swift
-// What the user hears while pouring. Words go only through Apple's VoiceOver, in the user's own voice and
-// rate: the app has no voice of its own. Short earcons (not speech) mark the high-alert band and the stop,
-// with or without VoiceOver.
+// What the user hears while pouring. One voice at a time: VoiceOver announcements when VoiceOver is on,
+// otherwise the app's own speech synthesizer, never both. Short earcons mark the high-alert band and the stop.
 //
 // The iPhone vibrates only when the microphone isn't measuring (start, stop, done, errors): vibration
 // travels through the table into the cup and the microphone. While pouring, the Watch's taps carry the level.
@@ -16,6 +15,7 @@ final class PourFeedback {
     /// Off in Settings for users who prefer the Watch alone. Urgent alerts still speak.
     var speechEnabled = true
 
+    @ObservationIgnored private let synthesizer = AVSpeechSynthesizer()
     @ObservationIgnored private var players: [Earcon: AVAudioPlayer] = [:]
     @ObservationIgnored private var lastFramingCue: FramingCue?
     @ObservationIgnored private var lastFramingTime = Date.distantPast
@@ -97,11 +97,18 @@ final class PourFeedback {
     // MARK: Speech
 
     private func say(_ text: String, urgent: Bool = false) {
-        guard speechEnabled || urgent, UIAccessibility.isVoiceOverRunning else { return }
-        // High priority interrupts whatever VoiceOver is reading.
-        var announcement = AttributedString(text)
-        announcement.accessibilitySpeechAnnouncementPriority = urgent ? .high : .default
-        AccessibilityNotification.Announcement(announcement).post()
+        guard speechEnabled || urgent else { return }
+        if UIAccessibility.isVoiceOverRunning {
+            // VoiceOver speaks it in the user's own voice and rate; high priority interrupts other speech.
+            var announcement = AttributedString(text)
+            announcement.accessibilitySpeechAnnouncementPriority = urgent ? .high : .default
+            AccessibilityNotification.Announcement(announcement).post()
+            return
+        }
+        if urgent { synthesizer.stopSpeaking(at: .immediate) }
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.prefersAssistiveTechnologySettings = true
+        synthesizer.speak(utterance)
     }
 
     // MARK: Earcons

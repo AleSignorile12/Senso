@@ -423,19 +423,16 @@ struct PouringView: View {
                     .accessibilityFocused($percentFocused)
                     .accessibilityAction(named: calibrating ? "Full" : "Stop", onStop)
                 Spacer()
-                // Only a calibration pour has a button: the user says when the cup is full. A normal pour
-                // stops by swiping down, the VoiceOver Stop action or a two-finger double-tap.
-                if calibrating {
-                    Button(action: onStop) {
-                        Text("Full")
-                            .font(.senso(stopSize, .semibold))
-                            .padding(.horizontal, 44)
-                            .frame(minHeight: 56)
-                            .overlay(Capsule().stroke(.white, lineWidth: 2))
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityHint("Saves this pour as the cup's full level.")
+                // Always visible: swiping down and the VoiceOver actions are shortcuts nobody can discover.
+                Button(action: onStop) {
+                    Text(calibrating ? "Full" : "Stop")
+                        .font(.senso(stopSize, .semibold))
+                        .padding(.horizontal, 44)
+                        .frame(minHeight: 56)
+                        .overlay(Capsule().stroke(.white, lineWidth: 2))
                 }
+                .buttonStyle(.plain)
+                .accessibilityHint(calibrating ? "Saves this pour as the cup's full level." : "Stops listening and goes back to the start.")
             }
             .foregroundStyle(.white)
             .padding(.horizontal, 24)

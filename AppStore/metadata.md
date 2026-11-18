@@ -28,8 +28,8 @@ Put your iPhone next to the cup, tap Fill Up, or say "Start pouring with Senso",
 • Apple Watch: taps on your wrist that speed up as the cup fills. Set your stop level with the Digital Crown.
 • Calibrate your favourite cups once for a more accurate level
 • Start hands-free with Siri, the Action Button or Control Center
-• Optional camera help to point your iPhone at the cup
-• Designed for VoiceOver, large text and high contrast
+• Optional camera to find your cup and help you point your iPhone at it
+• Designed for VoiceOver and large text
 
 Private by design: sound and camera images are analysed on your iPhone and never leave it. Senso has no account, no ads and no tracking, and collects no data.
 

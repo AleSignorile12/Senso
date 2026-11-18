@@ -9,8 +9,10 @@ What's already in the project, and what only you can do (accounts, devices, uplo
   See `MLTraining/External/ATTRIBUTION.md`.
 - **Credits:** CC BY requires naming every creator. The app lists them under
   Settings › Help › Acknowledgements, from `SensoApp/ML/TrainingDataCredits.txt`.
-- **App icon:** iPhone and Watch, 1024 px, opaque (`Assets.xcassets/AppIcon`). It's a simple crimson wave
-  on sky blue from the Almost Purple colours. Replace the PNG if you have a designed one.
+- **Watch font:** Archivo, because watchOS has no wide system font. It's free under the SIL Open Font
+  License, and the licence ships with it in `SensoWatch Watch App/Fonts/`.
+- **App icon:** iPhone and Watch, 1024 px, opaque (`Assets.xcassets/AppIcon`). It's a simple blue wave
+  on pale blue from the water design's colours. Replace the PNG if you have a designed one.
 - **Version:** 1.0, build 1. Raise `CURRENT_PROJECT_VERSION` (the project's build number) for every upload.
 - **Export compliance:** `ITSAppUsesNonExemptEncryption = NO`, because Senso uses no encryption of its own.
   App Store Connect won't ask about it on each upload.
@@ -70,17 +72,23 @@ What's already in the project, and what only you can do (accounts, devices, uplo
    | VoiceOver | Designed for it | Test every screen, iPhone and Watch |
    | Voice Control | Likely | Every button has a label; test "Tap Fill up" |
    | Larger Text | Designed for it | All text uses Dynamic Type |
-   | Sufficient Contrast | Yes by design | 7:1 or more |
+   | Sufficient Contrast | No | White on the brand blue is 2.9:1, below Apple's 4.5:1, so don't claim it |
    | Differentiate Without Color Alone | Yes | States are always spelled out |
    | Reduced Motion | Yes | With Reduce Motion on, the liquid stays still and screens just fade |
    | Dark Interface | No | Ready and Done are always light, so don't claim it |
    | Captions, Audio Descriptions | Not applicable | Senso has no video |
 
 7. **Screenshots** (required): ready to upload in `Screenshots/`.
-   - **iPhone 6.9″:** `Screenshots/iPhone-en/`, 6 images at 1320 × 2868 px from an iPhone 17 Pro Max
-     simulator: Ready, pouring at 62%, the 86% alert, Done, the welcome sheet and Settings.
-   - **Apple Watch:** `Screenshots/Watch/`, 3 images at 422 × 514 px (Apple Watch Ultra): Ready, pouring,
-     Done.
+   - **iPhone 6.9″:** `Screenshots/iPhone-en/`, 6 PNGs at 1320 × 2868 px: Ready, pouring at 62%, the 86%
+     alert, Done, the welcome sheet and Settings. Each shows the real app, captured in an iPhone 17 Pro Max
+     simulator, inside a drawn black iPhone 17 frame. Upload these. `Screenshots/iPhone-PDF/` has the same
+     images as single PDFs. To frame new captures, keep them in their own folder and run
+     `swift AppStore/Screenshots/frame-iphone.swift <raw folder> AppStore/Screenshots`.
+   - **Apple Watch:** `Screenshots/Watch/`, 3 PNGs at 422 × 514 px, each showing a page of the design file
+     `WATCH.pdf` inside a drawn Watch frame: Ready, pouring, Done. Upload these. `Screenshots/Watch-PDF/` has
+     the same images as single PDFs, but App Store Connect accepts only PNG or JPEG. To make them again, run
+     `swift AppStore/Screenshots/frame-watch.swift <path to WATCH.pdf> AppStore/Screenshots`. They come from
+     the design, while the Watch app itself uses Archivo and `#009EF8`, so compare them before submitting.
 
    The level numbers are sample values, because a simulator can't hear a pour. To take them again after a
    design change, run a Debug build in a simulator with a launch argument (it opens that screen):

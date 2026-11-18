@@ -8,7 +8,7 @@ Senso is an accessibility app. It helps blind and low-vision people pour drinks 
 No account or sign-in is needed.
 
 HOW TO TEST (about 1 minute, with water):
-1. Open Senso. A one-screen introduction appears on first launch: read it and tap Got it. Then tap FILL UP
+1. Open Senso. A one-screen introduction appears on first launch: read it and tap Continue. Then tap FILL UP
    and allow microphone access.
 2. Place the iPhone on the counter next to an empty glass. Pour water from a bottle or jug into the glass.
 3. Senso detects the pour, speaks the progress at 25, 50, 75 and 85%, and says "Stop! Glass is full" when the
@@ -21,9 +21,10 @@ The app presents itself as an aid, not a guarantee.
 
 MICROPHONE: used only while a pour is running, analysed on the device in real time, never recorded or sent.
 
-CAMERA: optional and off by default (Settings › Camera help). It gives spoken tips for pointing the
-iPhone at the cup before pouring. During the pour, the background takes its colours from the camera image,
-like a heavily blurred preview. Images are analysed on the device and never saved.
+CAMERA: optional and off by default (Settings › Use the camera to find the cup). It looks for the cup, so a
+pour is recognised a little sooner, and gives spoken tips for pointing the iPhone at it before pouring. Senso
+works fully without it. During the pour, the background takes its colours from the camera image, like a
+heavily blurred preview. Images are analysed on the device and never saved.
 
 APPLE WATCH: the Watch app mirrors the pour and taps the wrist faster as the cup fills, so the user can
 follow the pour without looking or listening. While a pour is running (usually under a minute), it holds a

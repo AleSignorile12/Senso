@@ -1,12 +1,15 @@
 // SensoDesign.swift
 // Colours, type and the liquid shape from the blue "water" design, shared by iPhone and Watch.
-// The design's typeface is SF Pro Expanded, which is the system font at `.expanded` width, so no font
-// files are bundled and Dynamic Type keeps working.
+// The iPhone's typeface is SF Pro Expanded, the system font at `.expanded` width. watchOS has no expanded
+// system font, so the Watch bundles Archivo at its widest (SIL Open Font License, see Archivo-OFL.txt).
 //
 // WCAG contrast: white on #009EF8 is 2.9:1, below Apple's 4.5:1, so with Increase Contrast on (iPhone)
 // the blue deepens to #1A66D1, 5.4:1.
 
 import SwiftUI
+#if os(watchOS)
+import CoreText
+#endif
 
 nonisolated enum SensoColor {
     /// Brand blue: buttons, liquid, titles (#009EF8, from the design).
@@ -24,9 +27,18 @@ nonisolated enum SensoColor {
 }
 
 extension Font {
-    /// SF Pro Expanded. Pass a size from `@ScaledMetric` so it follows Dynamic Type.
+    /// The design's wide typeface. Pass a size from `@ScaledMetric` so it follows Dynamic Type.
     static func senso(_ size: CGFloat, _ weight: Font.Weight = .bold) -> Font {
-        .system(size: size, weight: weight).width(.expanded)
+        #if os(watchOS)
+        // Archivo's variation axes, as four-character tags: "wght" (weight) and "wdth" (125 is its widest).
+        let wght: CGFloat = weight == .regular ? 400 : weight == .semibold ? 600 : 800
+        var font = CTFontDescriptorCreateWithNameAndSize("Archivo-SemiBold" as CFString, size)
+        font = CTFontDescriptorCreateCopyWithVariation(font, 0x7767_6874 as CFNumber, wght)
+        font = CTFontDescriptorCreateCopyWithVariation(font, 0x7764_7468 as CFNumber, 125)
+        return Font(CTFontCreateWithFontDescriptor(font, size, nil))
+        #else
+        return .system(size: size, weight: weight).width(.expanded)
+        #endif
     }
 }
 

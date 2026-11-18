@@ -13,7 +13,7 @@
 </p>
 <p align="center">
   <img src="AppStore/Screenshots/Watch/1-fill-up.png" width="15%" alt="Watch ready screen">
-  <img src="AppStore/Screenshots/Watch/2-72-percent.png" width="15%" alt="Watch pouring at 72 percent">
+  <img src="AppStore/Screenshots/Watch/2-52-percent.png" width="15%" alt="Watch pouring at 52 percent">
   <img src="AppStore/Screenshots/Watch/3-100-percent.png" width="15%" alt="Watch done at 100 percent">
 </p>
 
@@ -52,9 +52,9 @@ Also:
 
 - **Apple Watch.** The Watch mirrors the pour and taps your wrist faster as the cup fills, so you can follow without looking or listening. Turn the Digital Crown to set the stop level.
 - **Cups.** Save your favourite cups and calibrate each one with a single pour (empty to full, then tap **Full**). Later pours into that cup are more accurate.
-- **Camera help (optional, off by default).** Before the pour, spoken tips help you point the iPhone at the cup: "Move the phone left", "Move closer", "Cup centred".
+- **Camera (optional, off by default).** Senso looks for the cup so a pour is recognised a little sooner. Before the pour, spoken tips help you point the iPhone at it: "Move the phone left", "Move closer", "Cup centred".
 - **Onboarding.** A welcome sheet on first launch, in Apple's own style, explains where to put the iPhone, how a pour works, calibration, privacy and safety. Settings › Help › How Senso works shows it again.
-- **Settings:** cups and calibration, stop level, spoken guidance on/off, start listening when Senso opens, camera help, help, acknowledgements, and support by email.
+- **Settings:** cups and calibration, stop level, spoken guidance on/off, start listening when Senso opens, the optional camera, help, acknowledgements, and support by email.
 
 Senso is an aid, not a guarantee. The level can be wrong, especially with cups you haven't calibrated, in noisy rooms, or with thick liquids. The app says so.
 
@@ -149,7 +149,7 @@ Pure logic on the main actor: no audio, no UI. States: `ready → preparing → 
 
 ### 8. Camera help (`SensoApp/Camera/CameraFraming.swift`)
 
-Opt-in. Vision's built-in image classifier (`VNClassifyImageRequest`) checks for a cup-like object, and objectness saliency finds where it is. The result becomes a spoken framing cue before the pour. When neither is sure, the cue is "no cup", never a guess. The camera never estimates fill. While it runs, it also samples the picture's colours into a 3×3 grid for the pouring screen's background, capped so white text keeps at least 7:1 contrast.
+Opt-in. Vision's built-in image classifier (`VNClassifyImageRequest`) checks for a cup-like object, and objectness saliency finds where it is. The result becomes a spoken framing cue before the pour, and a confirmed cup lets a slightly weaker pour sound start it (0.55 instead of 0.7). When neither is sure, the cue is "no cup", never a guess. The camera never estimates fill. While it runs, it also samples the picture's colours into a 3×3 grid for the pouring screen's background, capped so white text keeps at least 7:1 contrast.
 
 ---
 
@@ -200,24 +200,22 @@ The app's **Data Collection** screen (Debug builds only, the waveform button on 
 
 ## Design
 
-The visual spec is the **"Almost Purple"** design. Tokens and the liquid shape live in [`SharedModels/SensoDesign.swift`](SharedModels/SensoDesign.swift) and are shared by iPhone and Watch.
+The visual spec is the blue **"water"** design. Tokens and the liquid shape live in [`SharedModels/SensoDesign.swift`](SharedModels/SensoDesign.swift) and are shared by iPhone and Watch.
 
 | Token | Value | Used for |
 | --- | --- | --- |
-| Crimson | `#840E08` | Brand red: buttons, liquid, titles |
-| Sky | `#C9E7F6` | "FILL UP!" text, the Home button |
+| Water | `#009EF8` | Brand blue: buttons, liquid, titles (`#1A66D1` with Increase Contrast on iPhone) |
 | Sky Mist | `#D9F1FD` | Empty part of the glass on the Done screen |
-| Blush | `#EED3D4` | Watch "Tap to pour again" (the design's pink, lightened to pass 7:1) |
 
-- **Type:** SF Pro Expanded, which is the system font at `.width(.expanded)`. No font files are bundled, so Dynamic Type keeps working. (watchOS ignores the expanded width.)
+- **Type:** on iPhone, SF Pro Expanded, which is the system font at `.width(.expanded)`. watchOS ignores that width, so the Watch bundles Archivo at its widest (SIL Open Font License, in `SensoWatch Watch App/Fonts/`). Both follow Dynamic Type.
 - **Screens:** Ready → Pouring (normal / high alert) → Done, on iPhone and Watch.
 - **The liquid:** `LiquidShape` is a sine-wave surface. `MovingLiquid` animates it with a `TimelineView`: it drifts one wavelength every 3 s and swells ±15 % over 5 s, so the liquid keeps moving while the level holds. Percentages change with `.contentTransition(.numericText)`.
 - **Transitions:** the root view is a `ZStack` (Ready < Pouring < Done). Pouring slides in from the bottom and fades out; Done slides in and out from the bottom.
 - **Home:** a large labelled **Settings** button (at least 64 pt) in the corner, read last by VoiceOver.
 - **Onboarding** uses Apple's native welcome-sheet style: system fonts, symbol + title + subtitle rows, a prominent Continue button.
-- **App icon:** a crimson wave on sky blue (iPhone and Watch).
+- **App icon:** a blue wave on pale blue (iPhone and Watch).
 
-Deliberate departures from the design, all for accessibility or honesty: a sensor/source badge, a Stop button, a darker stand-in for the blurred camera background (to keep 7:1 contrast), and the lighter Watch pink.
+Deliberate departures from the design, all for accessibility: a visible Stop button and a darker stand-in for the blurred camera background (to keep 7:1 contrast).
 
 ---
 
@@ -226,11 +224,11 @@ Deliberate departures from the design, all for accessibility or honesty: a senso
 Accessibility is the product, not an add-on.
 
 - **VoiceOver first.** Every control has a label, states are spoken, and progress goes through VoiceOver announcements when it's on.
-- **Contrast ≥ 7:1 (WCAG AAA)** everywhere: white on crimson 10.3:1, sky on crimson 7.9:1, blush on crimson 7.3:1. The camera-tinted background is capped to keep it (`SceneColorTests`).
+- **Contrast:** white on the brand blue is 2.9:1, below WCAG AA's 4.5:1. With Increase Contrast on, the iPhone deepens the blue to reach 5.4:1. The camera-tinted background is capped so white text keeps at least 7:1 (`SceneColorTests`).
 - **Dynamic Type** on every text style, including the expanded brand font.
 - **Reduce Motion:** the liquid stays still and screens only fade.
 - **Never colour alone:** every state is also spelled out in words.
-- **Honest numbers:** no estimate shows "—", and the source badge says whether a trained model or the DSP fallback is listening.
+- **Honest numbers:** no estimate shows "—", and Senso says so out loud if it can't hear the level during a pour.
 - **Multimodal:** speech, earcons and Watch haptics, each usable on its own.
 
 ---

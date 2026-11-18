@@ -1,6 +1,6 @@
 # Senso: Privacy Policy and Support
 
-Last updated: 16 November 2026
+Last updated: 18 November 2026
 
 Senso collects no personal data. Nothing you do in Senso is sent to the developer or to anyone else.
 
@@ -12,9 +12,10 @@ in real time, to tell how full your cup is. The audio is never recorded, saved o
 
 ## Camera (optional, off by default)
 
-If you turn on "Camera help to point at the cup", Senso analyses camera images on your iPhone before you pour
-to tell you where the cup is. While you pour, it also takes the average colours of the picture to tint the
-screen's background. The images are never saved or sent anywhere.
+If you turn on "Use the camera to find the cup", Senso analyses camera images on your iPhone to find your cup,
+so it can recognise the pour a little sooner and tell you how to point your iPhone at it. While you pour, it
+also takes the average colours of the picture to tint the screen's background. The images are never saved or
+sent anywhere.
 
 ## Apple Watch
 

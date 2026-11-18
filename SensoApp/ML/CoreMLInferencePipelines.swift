@@ -47,27 +47,33 @@ final class AcousticPipeline {
     /// Bumped on every start and stop, so readings still in flight from an old session are dropped.
     @ObservationIgnored private var session = 0
     @ObservationIgnored private var fillTracker: AcousticFillTracker?
+    /// Which restart of the fill estimate is current (see `restartFill`).
+    @ObservationIgnored private var fillPour = 0
 
     /// `calibration` is the chosen cup's, if any. With `calibrating`, the pour is also recorded so
     /// `finishCalibration()` can measure the cup.
     func start(with audio: AudioCaptureService, calibration: FillCalibration? = nil, calibrating: Bool = false) async {
+        session += 1
+        let current = session
         if !didLookForModel {
             trainedModel = await SoundModelLocator.loadBundledModel()
             didLookForModel = true
         }
-        session += 1
-        let current = session
+        // Stopped (or started again) while the model loaded: don't turn the microphone on behind the user's back.
+        guard session == current else { return }
         latest = nil
         fill = nil
-        let fillTracker = AcousticFillTracker(calibration: calibration, calibrating: calibrating) { [weak self] reading in
+        fillPour = 0
+        let fillTracker = AcousticFillTracker(calibration: calibration, calibrating: calibrating) { [weak self] reading, pour in
             Task { @MainActor in
-                guard let self, self.session == current else { return }
+                // Also drop estimates still in flight from before `restartFill`.
+                guard let self, self.session == current, self.fillPour == pour else { return }
                 self.fill = reading
             }
         }
         self.fillTracker = fillTracker
         let deliver: ReadingHandler = { [weak self] reading in
-            fillTracker.setPouring(reading.pouringConfidence >= 0.5)
+            fillTracker.setPouringConfidence(reading.pouringConfidence)
             Task { @MainActor in
                 guard let self, self.session == current else { return }
                 self.latest = reading
@@ -91,6 +97,12 @@ final class AcousticPipeline {
     /// What the calibration pour measured so far. Call before `stop`. nil if under 2 s of pouring was heard.
     func finishCalibration() -> FillCalibration? {
         fillTracker?.finishCalibration()
+    }
+
+    /// The cup was just found: forget anything heard before, so the level counts from 0 from now on.
+    func restartFill() {
+        fillPour = fillTracker?.restartPour() ?? fillPour
+        fill = nil
     }
 
     private func makeClassifier(_ deliver: @escaping ReadingHandler) -> any AcousticClassifierProtocol {
@@ -201,7 +213,8 @@ nonisolated final class SoundAnalysisClassifier: NSObject, AcousticClassifierPro
 /// runs on the audio processing queue, classifier results may arrive on another thread, and
 /// `finishCalibration` is called from the main actor.
 nonisolated final class AcousticFillTracker: Sendable {
-    typealias Handler = @Sendable (FillReading?) -> Void
+    /// The estimate, and which restart of the pour it belongs to.
+    typealias Handler = @Sendable (FillReading?, Int) -> Void
 
     private struct State {
         var tracker: ResonanceTracker?
@@ -212,6 +225,7 @@ nonisolated final class AcousticFillTracker: Sendable {
         var isPouring = false
         var frameCount = 0
         var lastSent: FillReading?
+        var pour = 0
     }
 
     private let state: Mutex<State>
@@ -222,22 +236,37 @@ nonisolated final class AcousticFillTracker: Sendable {
         self.onFill = onFill
     }
 
-    func setPouring(_ isPouring: Bool) {
-        state.withLock { $0.isPouring = isPouring }
+    /// Starts the pour's level (and a calibration recording) over. The resonance tracker keeps what it
+    /// learned about the room's fixed peaks.
+    func restartPour() -> Int {
+        state.withLock { state in
+            state.estimator.reset()
+            if state.recorder != nil { state.recorder = CalibrationRecorder() }
+            state.lastSent = nil
+            state.pour += 1
+            return state.pour
+        }
+    }
+
+    /// Starts counting at 0.5 and keeps counting down to 0.4, the engine's keep-pouring level. Without
+    /// that hysteresis a pour the engine still hears (0.4–0.5) would stop advancing the level, and the
+    /// stop alert would come late.
+    func setPouringConfidence(_ confidence: Double) {
+        state.withLock { $0.isPouring = confidence >= ($0.isPouring ? 0.4 : 0.5) }
     }
 
     func analyze(_ buffer: AVAudioPCMBuffer) {
         guard let channels = buffer.floatChannelData else { return }
         let samples = UnsafeBufferPointer(start: channels[0], count: Int(buffer.frameLength))
         let sampleRate = buffer.format.sampleRate
-        let readings: [FillReading?] = state.withLock { state in
+        let (readings, pour): ([FillReading?], Int) = state.withLock { state in
             if state.tracker?.sampleRate != sampleRate {
                 // A route change can change the sample rate: start the pour's estimate over.
                 state.tracker = ResonanceTracker(sampleRate: sampleRate)
                 state.estimator.reset()
                 state.pending = []
             }
-            guard let tracker = state.tracker else { return [] }
+            guard let tracker = state.tracker else { return ([], state.pour) }
             state.pending.append(contentsOf: samples)
             let frameSeconds = Double(ResonanceTracker.hopSize) / sampleRate
             var readings: [FillReading?] = []
@@ -257,9 +286,9 @@ nonisolated final class AcousticFillTracker: Sendable {
                     readings.append(reading)
                 }
             }
-            return readings
+            return (readings, state.pour)
         }
-        readings.forEach(onFill)
+        readings.forEach { onFill($0, pour) }
     }
 
     func finishCalibration() -> FillCalibration? {

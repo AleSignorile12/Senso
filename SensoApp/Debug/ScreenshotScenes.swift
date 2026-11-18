@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum ScreenshotScene: String {
-    case onboarding, ready, pouring, alert, done, settings
+    case onboarding, ready, listening, pouring, alert, done, settings
 
     static var current: ScreenshotScene? {
         UserDefaults.standard.string(forKey: "SensoScreenshot").flatMap(Self.init)
@@ -22,15 +22,14 @@ enum ScreenshotScene: String {
                 .sheet(isPresented: .constant(true)) { OnboardingView().interactiveDismissDisabled() }
         case .ready:
             ReadyView(onStart: {}, cupName: "Blue mug", onOpenCups: {})
+        case .listening:
+            PouringView(state: .preparing, fillPercent: nil, onStop: {})
+                .preferredColorScheme(.dark)
         case .pouring:
-            PouringView(state: .pouring, fillPercent: 62, fillMethod: .pitchCalibrated,
-                        source: .trainedModel(version: "SensoSoundClassifier_v3"),
-                        sensors: [.microphone: .active, .camera: .unavailable, .watch: .active], onStop: {})
+            PouringView(state: .pouring, fillPercent: 62, onStop: {})
                 .preferredColorScheme(.dark)
         case .alert:
-            PouringView(state: .approachingTarget, fillPercent: 86, fillMethod: .pitchCalibrated,
-                        source: .trainedModel(version: "SensoSoundClassifier_v3"),
-                        sensors: [.microphone: .active, .camera: .unavailable, .watch: .active], onStop: {})
+            PouringView(state: .approachingTarget, fillPercent: 86, onStop: {})
                 .preferredColorScheme(.dark)
         case .done:
             CompleteView(targetPercent: 90, onAgain: {}, onHome: {})

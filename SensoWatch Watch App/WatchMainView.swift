@@ -1,5 +1,5 @@
 // WatchMainView.swift
-// Watch UI from the "Almost Purple" design: Ready → fill % → done. The iPhone runs the sensing; the Watch
+// Watch UI from the blue "water" design: Ready → fill % → done. The iPhone runs the sensing; the Watch
 // shows its state, taps the wrist (WatchLink) and sets the stop target with the Digital Crown.
 
 import SwiftUI
@@ -35,7 +35,7 @@ struct WatchRootView: View {
         case .complete:
             WatchCompleteView(targetPercent: link.message.targetPercent) { link.send(.command(.pourAgain)) }
         default:
-            WatchPouringView(fillPercent: link.message.fillPercent)
+            WatchPouringView(fillPercent: link.message.fillPercent, preparing: link.message.state == .preparing)
                 .accessibilityAction(named: "Stop") { link.send(.command(.stop)) }
         }
     }
@@ -57,7 +57,7 @@ struct WatchReadyView: View {
         VStack(spacing: 10) {
             Text("Ready to pour?")
                 .font(.senso(titleSize))
-                .foregroundStyle(SensoColor.crimson)
+                .foregroundStyle(SensoColor.water)
                 .lineLimit(2)
                 .minimumScaleFactor(0.6)
                 .multilineTextAlignment(.center)
@@ -71,9 +71,9 @@ struct WatchReadyView: View {
                 .font(.senso(buttonSize))
                 .lineLimit(1)
                 .minimumScaleFactor(0.4)
-                .foregroundStyle(SensoColor.sky)
+                .foregroundStyle(.white)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(SensoColor.crimson, in: .rect(cornerRadius: 44))
+                .background(SensoColor.water, in: .rect(cornerRadius: 44))
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Fill up")
@@ -81,7 +81,7 @@ struct WatchReadyView: View {
             .accessibilityHint("Starts listening on your iPhone. Turn the Digital Crown to change the stop alert.")
             Text(phoneReachable ? "Stop at \(targetPercent)%" : "Open Senso on iPhone")
                 .font(.senso(targetSize, .regular))
-                .foregroundStyle(SensoColor.crimson)
+                .foregroundStyle(SensoColor.water)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
                 .accessibilityHidden(true)
@@ -104,29 +104,43 @@ struct WatchReadyView: View {
 
 struct WatchPouringView: View {
     let fillPercent: Int?
+    /// Before the pour (or paused): the counter shows the last level, starting at 0.
+    var preparing = false
 
     @ScaledMetric(relativeTo: .largeTitle) private var percentSize = 56
+    /// The last known level, so the liquid holds its height when an estimate drops out.
+    @State private var level = 0
+
+    private var shownPercent: Int? { fillPercent ?? (preparing ? level : nil) }
 
     var body: some View {
         GeometryReader { proxy in
-            Text(fillText(fillPercent))
+            let liquid = MovingLiquid(amplitude: 4, wavelength: 55, color: SensoColor.water)
+                .frame(height: max(12, proxy.size.height * CGFloat(level) / 100))
+                .frame(maxHeight: .infinity, alignment: .bottom)
+            let number = Text(fillText(shownPercent))
                 .font(.senso(percentSize))
-                .foregroundStyle(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.4)
-                .contentTransition(.numericText(value: Double(fillPercent ?? 0)))
-                .animation(.smooth(duration: 0.6), value: fillPercent)
+                .contentTransition(.numericText(value: Double(shownPercent ?? 0)))
                 .padding(.horizontal, 8)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.top, 10)
-                .background(MovingLiquid(amplitude: 4, wavelength: 55, color: SensoColor.crimson))
-                .frame(height: proxy.size.height * 0.62)
-                .frame(maxHeight: .infinity, alignment: .bottom)
+            // The number is blue on white and turns white where the liquid covers it, so it reads at any level.
+            ZStack {
+                liquid
+                number.foregroundStyle(SensoColor.water)
+                number.foregroundStyle(.white).mask(liquid)
+            }
+            .animation(.smooth(duration: 0.6), value: level)
+            .animation(.smooth(duration: 0.6), value: shownPercent)
         }
         .background(.white)
         .ignoresSafeArea()
+        .onChange(of: fillPercent, initial: true) { _, percent in
+            if let percent { level = percent }
+        }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(fillPercent.map { Text("\($0) percent full") } ?? Text("No fill estimate yet"))
+        .accessibilityLabel(shownPercent.map { Text("\($0) percent full") } ?? Text("No fill estimate yet"))
         .accessibilityAddTraits(.updatesFrequently)
     }
 }
@@ -149,13 +163,13 @@ struct WatchCompleteView: View {
                     .minimumScaleFactor(0.4)
                 Text("Tap to pour again")
                     .font(.senso(actionSize))
-                    .foregroundStyle(SensoColor.blush)
+                    .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
             }
             .padding(.horizontal, 8)
             .padding(.top, 16)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(MovingLiquid(amplitude: 4, wavelength: 55, color: SensoColor.crimson).padding(.top, 6))
+            .background(MovingLiquid(amplitude: 4, wavelength: 55, color: SensoColor.water).padding(.top, 6))
             .background(.white)
         }
         .buttonStyle(.plain)

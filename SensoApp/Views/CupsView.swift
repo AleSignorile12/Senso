@@ -18,7 +18,8 @@ final class CupStore {
     var speechEnabled: Bool {
         didSet { defaults.set(speechEnabled, forKey: Keys.speech) }
     }
-    /// Spoken tips for pointing the camera at the cup before pouring. Off by default (battery, privacy).
+    /// Optional camera: looks for the cup before pouring, so a pour is recognised a little sooner, and
+    /// gives aiming tips ("Move left"…). Off by default (battery, privacy); Senso works by sound alone.
     var cameraHelp: Bool {
         didSet { defaults.set(cameraHelp, forKey: Keys.cameraHelp) }
     }
@@ -133,9 +134,11 @@ struct CupsView: View {
                     Stepper(value: $store.targetPercent, in: PourThresholds.targetRange, step: 5) {
                         Text("Stop alert at \(store.targetPercent)%")
                     }
+                    // A tick per 5 % step, so the level can be set by feel.
+                    .sensoryFeedback(.selection, trigger: store.targetPercent)
                     Toggle("Spoken guidance", isOn: $store.speechEnabled)
                     Toggle("Start listening when Senso opens", isOn: $store.autoStart)
-                    Toggle("Camera help to point at the cup", isOn: $store.cameraHelp)
+                    Toggle("Use the camera to find the cup", isOn: $store.cameraHelp)
                 } header: {
                     Text("Alert")
                 } footer: {

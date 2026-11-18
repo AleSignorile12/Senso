@@ -1,22 +1,26 @@
 // SensoDesign.swift
-// Colours, type and the liquid shape from the "Almost Purple" design, shared by iPhone and Watch.
+// Colours, type and the liquid shape from the blue "water" design, shared by iPhone and Watch.
 // The design's typeface is SF Pro Expanded, which is the system font at `.expanded` width, so no font
 // files are bundled and Dynamic Type keeps working.
 //
-// WCAG contrast (AAA needs 7:1): white on crimson 10.3:1, crimson on white 10.3:1,
-// sky on crimson 7.9:1, blush on crimson 7.3:1.
+// WCAG contrast: white on #009EF8 is 2.9:1, below Apple's 4.5:1, so with Increase Contrast on (iPhone)
+// the blue deepens to #1A66D1, 5.4:1.
 
 import SwiftUI
 
 nonisolated enum SensoColor {
-    /// Brand red: buttons, liquid, titles. Sampled from the design (#840E08).
-    static let crimson = Color(red: 0x84 / 255, green: 0x0E / 255, blue: 0x08 / 255)
-    /// Light blue: "FILL UP!" text and the HOME button (#C9E7F6).
-    static let sky = Color(red: 0xC9 / 255, green: 0xE7 / 255, blue: 0xF6 / 255)
+    /// Brand blue: buttons, liquid, titles (#009EF8, from the design).
+    #if os(iOS)
+    static let water = Color(UIColor { traits in
+        traits.accessibilityContrast == .high
+            ? UIColor(red: 0x1A / 255, green: 0x66 / 255, blue: 0xD1 / 255, alpha: 1)
+            : UIColor(red: 0x00 / 255, green: 0x9E / 255, blue: 0xF8 / 255, alpha: 1)
+    })
+    #else
+    static let water = Color(red: 0x00 / 255, green: 0x9E / 255, blue: 0xF8 / 255)
+    #endif
     /// The empty part of the glass at the top of the Done screen (#D9F1FD).
     static let skyMist = Color(red: 0xD9 / 255, green: 0xF1 / 255, blue: 0xFD / 255)
-    /// Watch "Tap to pour again". The design's pink only reached 4:1, so it's lightened to pass 7:1.
-    static let blush = Color(red: 0xEE / 255, green: 0xD3 / 255, blue: 0xD4 / 255)
 }
 
 extension Font {

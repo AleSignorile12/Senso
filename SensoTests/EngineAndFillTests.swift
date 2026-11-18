@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import Testing
 @testable import Senso
 
@@ -119,6 +120,72 @@ struct PourEngineTests {
         return (engine, { events })
     }
 
+    @Test func `a pour starts by sound alone, with no camera`() {
+        let (engine, events) = makeEngine()
+        engine.begin()
+        engine.ingest(reading(0.95, at: 0))
+        #expect(engine.state == .pouring)
+        #expect(events() == [.listening, .pouringDetected])
+    }
+
+    @Test func `a cup in view lets a slightly weaker sound start the pour`() {
+        let (engine, events) = makeEngine()
+        engine.begin()
+        engine.ingest(reading(0.6, at: 0))
+        #expect(engine.state == .preparing, "0.6 alone isn't enough")
+        engine.cupSeen()
+        engine.cupSeen()
+        engine.ingest(reading(0.6, at: 0.25))
+        #expect(engine.state == .pouring)
+        #expect(events() == [.listening, .cupFound, .pouringDetected], "cup found is said once")
+        engine.end()
+        engine.begin()
+        #expect(!engine.cupFound, "every pour looks for the cup again")
+    }
+
+    @Test func `the level stays at nothing until the pour is heard`() {
+        let (engine, _) = makeEngine()
+        engine.begin()
+        engine.ingest(fill(0.6))
+        #expect(engine.fillPercent == nil, "noise before the pour isn't a level")
+        engine.ingest(reading(0.9, at: 0))
+        engine.ingest(fill(0.1))
+        #expect(engine.fillPercent == 10)
+    }
+
+    @Test func `the stop alert fires during a pause if the level still climbs`() {
+        let (engine, events) = makeEngine()
+        engine.targetPercent = 90
+        engine.begin()
+        engine.ingest(reading(0.9, at: 0))
+        engine.ingest(reading(0.1, at: 1))
+        engine.ingest(reading(0.1, at: 2.6))
+        #expect(engine.state == .preparing, "the classifier lost the pour")
+        engine.ingest(fill(0.95))
+        #expect(engine.state == .complete)
+        #expect(events().last == .complete)
+    }
+
+    @Test func `pouring with no level estimate is said out loud, once per gap`() {
+        let (engine, events) = makeEngine()
+        engine.begin()
+        for second in stride(from: 0.0, through: 3.5, by: 0.25) { engine.ingest(reading(0.9, at: second)) }
+        #expect(events().filter { $0 == .levelUnknown }.count == 1)
+        engine.ingest(fill(0.3, rate: 0))
+        engine.ingest(reading(0.9, at: 3.75))
+        engine.ingest(nil, at: .now.addingTimeInterval(2))
+        for second in stride(from: 4.0, through: 7.5, by: 0.25) { engine.ingest(reading(0.9, at: second)) }
+        #expect(events().filter { $0 == .levelUnknown }.count == 2, "warned again after the level came back and was lost")
+    }
+
+    @Test func `a jump past several milestones says only the highest`() {
+        let (engine, events) = makeEngine()
+        engine.begin()
+        engine.ingest(reading(0.9, at: 0))
+        engine.ingest(fill(0.55, rate: 0))
+        #expect(events().filter { if case .milestone = $0 { true } else { false } } == [.milestone(50)])
+    }
+
     @Test func `pouring needs a confident reading and pauses only after a quiet stretch`() {
         let (engine, events) = makeEngine()
         engine.begin()
@@ -195,6 +262,28 @@ struct PourEngineTests {
         #expect(engine.fillPercent == nil)
         #expect(engine.state == .pouring)
         #expect(!events().contains(.complete))
+    }
+}
+
+// MARK: - Haptics
+
+struct HapticTests {
+    @Test(arguments: [
+        (PourState.ready, PourState.preparing, SensoryFeedback?.some(.start)),
+        (.complete, .preparing, .start),
+        (.pouring, .complete, .success),
+        (.approachingTarget, .ready, .stop),
+        (.complete, .ready, .impact(weight: .light)),
+        (.pouring, .uncertain, .warning),
+        (.preparing, .unavailable, .error),
+        // The microphone is measuring: no vibration.
+        (.preparing, .pouring, nil),
+        (.pouring, .approachingTarget, nil),
+        (.pouring, .preparing, nil),
+        (.uncertain, .preparing, nil),
+    ] as [(PourState, PourState, SensoryFeedback?)])
+    func `the iPhone vibrates only when the microphone isn't measuring`(old: PourState, new: PourState, expected: SensoryFeedback?) {
+        #expect(PourFeedback.haptic(from: old, to: new) == expected)
     }
 }
 

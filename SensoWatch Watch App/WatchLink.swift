@@ -82,16 +82,22 @@ final class WatchLink: NSObject, WCSessionDelegate {
 
 // MARK: - Haptics
 
-/// The pour as taps on the wrist, faster as the cup fills:
+/// The pour as taps on the wrist, faster as the cup fills, measured from the stop level (90 % by default):
+///   listening starts → "start" · stopped early → "down"
 ///   container locked → one click
-///   50–69 % → "up" every 1.2 s, 70–89 % → every 0.6 s, 90–99 % → "retry" every 0.3 s
+///   40–21 points below → "up" every 1.2 s, 20–11 below → every 0.6 s, the last 10 → "retry" every 0.3 s
 ///   complete → "stop", then "notification" 0.15 s later
+/// Relative to the target, because the stop fires early (reaction time): fixed bands at 90 % meant the
+/// fastest taps were never felt.
 final class HapticLadder {
     private var loop: Task<Void, Never>?
     private var interval: (seconds: Double, haptic: WKHapticType)?
 
     func update(from old: PhoneToWatchMessage, to new: PhoneToWatchMessage) {
         let device = WKInterfaceDevice.current()
+        // The iPhone started listening, or the pour was stopped before the glass was full.
+        if new.state.isActive, !old.state.isActive { device.play(.start) }
+        if new.state == .ready, old.state.isActive { device.play(.directionDown) }
         if new.containerLocked, !old.containerLocked, new.state.isActive { device.play(.click) }
 
         if new.state == .complete, old.state != .complete {
@@ -107,10 +113,10 @@ final class HapticLadder {
             stopLoop()
             return
         }
-        let next: (Double, WKHapticType)? = switch percent {
-        case 90...: (0.3, .retry)
-        case 70..<90: (0.6, .directionUp)
-        case 50..<70: (1.2, .directionUp)
+        let next: (Double, WKHapticType)? = switch new.targetPercent - percent {
+        case ...10: (0.3, .retry)
+        case 11...20: (0.6, .directionUp)
+        case 21...40: (1.2, .directionUp)
         default: nil
         }
         guard next?.0 != interval?.seconds || next?.1 != interval?.haptic else { return }

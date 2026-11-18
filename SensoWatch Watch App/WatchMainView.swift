@@ -1,5 +1,5 @@
 // WatchMainView.swift
-// Watch UI from the "Almost Purple" design: Ready → fill % → done. The iPhone runs the sensing; the Watch
+// Watch UI from the blue "water" design: Ready → fill % → done. The iPhone runs the sensing; the Watch
 // shows its state, taps the wrist (WatchLink) and sets the stop target with the Digital Crown.
 
 import SwiftUI
@@ -57,7 +57,7 @@ struct WatchReadyView: View {
         VStack(spacing: 10) {
             Text("Ready to pour?")
                 .font(.senso(titleSize))
-                .foregroundStyle(SensoColor.crimson)
+                .foregroundStyle(SensoColor.water)
                 .lineLimit(2)
                 .minimumScaleFactor(0.6)
                 .multilineTextAlignment(.center)
@@ -71,9 +71,9 @@ struct WatchReadyView: View {
                 .font(.senso(buttonSize))
                 .lineLimit(1)
                 .minimumScaleFactor(0.4)
-                .foregroundStyle(SensoColor.sky)
+                .foregroundStyle(.white)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(SensoColor.crimson, in: .rect(cornerRadius: 44))
+                .background(SensoColor.water, in: .rect(cornerRadius: 44))
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Fill up")
@@ -81,7 +81,7 @@ struct WatchReadyView: View {
             .accessibilityHint("Starts listening on your iPhone. Turn the Digital Crown to change the stop alert.")
             Text(phoneReachable ? "Stop at \(targetPercent)%" : "Open Senso on iPhone")
                 .font(.senso(targetSize, .regular))
-                .foregroundStyle(SensoColor.crimson)
+                .foregroundStyle(SensoColor.water)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
                 .accessibilityHidden(true)
@@ -119,7 +119,7 @@ struct WatchPouringView: View {
                 .padding(.horizontal, 8)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.top, 10)
-                .background(MovingLiquid(amplitude: 4, wavelength: 55, color: SensoColor.crimson))
+                .background(MovingLiquid(amplitude: 4, wavelength: 55, color: SensoColor.water))
                 .frame(height: proxy.size.height * 0.62)
                 .frame(maxHeight: .infinity, alignment: .bottom)
         }
@@ -149,13 +149,13 @@ struct WatchCompleteView: View {
                     .minimumScaleFactor(0.4)
                 Text("Tap to pour again")
                     .font(.senso(actionSize))
-                    .foregroundStyle(SensoColor.blush)
+                    .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
             }
             .padding(.horizontal, 8)
             .padding(.top, 16)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(MovingLiquid(amplitude: 4, wavelength: 55, color: SensoColor.crimson).padding(.top, 6))
+            .background(MovingLiquid(amplitude: 4, wavelength: 55, color: SensoColor.water).padding(.top, 6))
             .background(.white)
         }
         .buttonStyle(.plain)

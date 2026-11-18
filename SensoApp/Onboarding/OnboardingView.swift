@@ -49,7 +49,7 @@ struct OnboardingView: View {
             .padding(.vertical, 16)
             .background(Color(.systemBackground))
         }
-        .tint(SensoColor.crimson)
+        .tint(SensoColor.water)
         .background(Color(.systemBackground))
         .accessibilityAction(.escape) { dismiss() }
         .onAppear { titleFocused = true }

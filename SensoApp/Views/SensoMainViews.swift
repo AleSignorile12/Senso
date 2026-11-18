@@ -1,5 +1,5 @@
 // SensoMainViews.swift
-// iPhone UI from the "Almost Purple" design: Ready → Pouring (normal / high alert) → Done.
+// iPhone UI from the blue "water" design: Ready → Pouring (normal / high alert) → Done.
 // PourEstimationEngine decides the state and the number; PourFeedback speaks; the views only show.
 
 import SwiftUI
@@ -298,7 +298,7 @@ struct ReadyView: View {
                             .minimumScaleFactor(0.7)
                             .padding(.horizontal, 20)
                             .frame(minHeight: 64)
-                            .overlay(Capsule().stroke(SensoColor.crimson, lineWidth: 3))
+                            .overlay(Capsule().stroke(SensoColor.water, lineWidth: 3))
                             .contentShape(Capsule())
                     }
                     .buttonStyle(.plain)
@@ -325,13 +325,12 @@ struct ReadyView: View {
                     Text("UP!")
                 }
                 .font(.senso(fillUpSize))
-                .foregroundStyle(SensoColor.sky)
+                .foregroundStyle(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.4)
-                // The label bleeds off the bottom edge, as in the design.
-                .offset(y: fillUpSize * 0.2)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .background(SensoColor.crimson)
+                .padding(24)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(SensoColor.water)
                 .clipShape(.rect(cornerRadius: 56))
             }
             .buttonStyle(.plain)
@@ -341,7 +340,7 @@ struct ReadyView: View {
             .accessibilitySortPriority(1)
         }
         .accessibilityElement(children: .contain)
-        .foregroundStyle(SensoColor.crimson)
+        .foregroundStyle(SensoColor.water)
         .padding(.horizontal, 24)
         .padding(.top, 8)
         .padding(.bottom, 8)
@@ -426,12 +425,12 @@ struct PouringView: View {
             .frame(maxWidth: .infinity)
             .containerRelativeFrame(.vertical) { height, _ in height * 0.44 }
             .background {
-                MovingLiquid(amplitude: 7, wavelength: 100, color: SensoColor.crimson)
+                MovingLiquid(amplitude: 7, wavelength: 100, color: SensoColor.water)
                     .ignoresSafeArea(edges: .bottom)
             }
         }
         .background { PourBackdrop(colors: sceneColors).ignoresSafeArea() }
-        // Smart Invert would turn the crimson warning cyan.
+        // Smart Invert would turn the blue liquid orange.
         .accessibilityIgnoresInvertColors()
         // When the pour starts, VoiceOver moves to the number that matters.
         .onChange(of: state) { _, new in
@@ -583,7 +582,12 @@ struct CompleteView: View {
     @ScaledMetric(relativeTo: .largeTitle) private var titleSize = 38
     @ScaledMetric(relativeTo: .title2) private var subtitleSize = 27
     @ScaledMetric(relativeTo: .largeTitle) private var percentSize = 88
+    @ScaledMetric(relativeTo: .largeTitle) private var againLabelSize = 56
+    @ScaledMetric(relativeTo: .title3) private var homeSize = 22
     @AccessibilityFocusState private var titleFocused: Bool
+
+    /// Display-sized already; capped so the icon and label still fit the card at the largest text sizes.
+    private var againSize: CGFloat { min(againLabelSize, 64) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -604,11 +608,35 @@ struct CompleteView: View {
                 .frame(maxWidth: .infinity)
                 .accessibilityLabel("\(targetPercent) percent full")
             Spacer(minLength: 16)
-            VStack(spacing: 24) {
-                SlabButton(title: "AGAIN", systemImage: "arrow.counterclockwise", background: .white, bleeds: false, action: onAgain)
-                    .accessibilityHint("Starts a new pour.")
-                SlabButton(title: "HOME", systemImage: "arrow.left", background: SensoColor.sky, bleeds: true, action: onHome)
-                    .accessibilityHint("Goes back to the start screen.")
+            VStack(spacing: 20) {
+                Button(action: onAgain) {
+                    VStack(spacing: 8) {
+                        Image(systemName: "arrow.counterclockwise")
+                            .font(.system(size: againSize * 1.3, weight: .semibold))
+                            .accessibilityHidden(true)
+                        Text("AGAIN")
+                            .font(.senso(againSize))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.4)
+                    }
+                    .foregroundStyle(SensoColor.water)
+                    .padding(24)
+                    .frame(maxWidth: .infinity, minHeight: 220)
+                    .background(.white, in: .rect(cornerRadius: 34))
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Starts a new pour.")
+                // Not in the mock-up, but a screen needs a way back (HIG); styled like Stop so AGAIN stays the main action.
+                Button(action: onHome) {
+                    Text("Home")
+                        .font(.senso(homeSize, .semibold))
+                        .padding(.horizontal, 44)
+                        .frame(minHeight: 56)
+                        .overlay(Capsule().stroke(.white, lineWidth: 2))
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Goes back to the start screen.")
             }
         }
         .foregroundStyle(.white)
@@ -617,52 +645,13 @@ struct CompleteView: View {
         .padding(.bottom, 8)
         .background {
             // The glass is full: liquid right up to just under the status bar.
-            MovingLiquid(amplitude: 4, wavelength: 100, color: SensoColor.crimson)
+            MovingLiquid(amplitude: 4, wavelength: 100, color: SensoColor.water)
                 .ignoresSafeArea(edges: .bottom)
         }
         .background {
             LinearGradient(colors: [.white, SensoColor.skyMist], startPoint: .top, endPoint: .bottom).ignoresSafeArea()
         }
     }
-}
-
-/// The big AGAIN / HOME buttons: icon top-right, oversized label bottom-left.
-struct SlabButton: View {
-    let title: LocalizedStringKey
-    let systemImage: String
-    let background: Color
-    /// Push the label past the bottom edge, as the design does for HOME.
-    let bleeds: Bool
-    let action: () -> Void
-
-    @ScaledMetric(relativeTo: .largeTitle) private var size = 68
-
-    var body: some View {
-        Button(action: action) {
-            ZStack {
-                Image(systemName: systemImage)
-                    .font(.system(size: labelSize * 0.95, weight: .semibold))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                Text(title)
-                    .font(.senso(labelSize))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.4)
-                    .offset(y: bleeds ? labelSize * 0.2 : 0)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-            }
-            .padding(.horizontal, 22)
-            .padding(.vertical, bleeds ? 0 : 16)
-            .padding(.top, bleeds ? 16 : 0)
-            .foregroundStyle(SensoColor.crimson)
-            .frame(maxWidth: .infinity, minHeight: 160, maxHeight: 175)
-            .background(background)
-            .clipShape(.rect(cornerRadius: 34))
-        }
-        .buttonStyle(.plain)
-    }
-
-    /// Already display-sized; past this the label would run into the icon.
-    private var labelSize: CGFloat { min(size, 70) }
 }
 
 // MARK: - Previews (design fixtures, not sensor data)

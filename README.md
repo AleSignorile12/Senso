@@ -1,3 +1,5 @@
+![Senso: Pour with confidence](.github/banner.gif)
+
 # Senso: Pouring Assistant
 
 **Hear when your cup is full.** Senso is an iPhone and Apple Watch app that helps blind and low-vision people pour drinks without overflowing. Put the iPhone next to the cup and start pouring. Senso listens to the liquid, works out how full the cup is from the sound, and says "Stop! Glass is full" early enough for you to stop in time.

@@ -23,18 +23,13 @@ enum ScreenshotScene: String {
         case .ready:
             ReadyView(onStart: {}, cupName: "Blue mug", onOpenCups: {})
         case .findingCup:
-            PouringView(state: .preparing, cupFound: false, fillPercent: nil, source: .none,
-                        sensors: [.microphone: .active, .camera: .lowConfidence, .watch: .active], onStop: {})
+            PouringView(state: .preparing, cupFound: false, fillPercent: nil, onStop: {})
                 .preferredColorScheme(.dark)
         case .pouring:
-            PouringView(state: .pouring, fillPercent: 62, fillMethod: .pitchCalibrated,
-                        source: .trainedModel(version: "SensoSoundClassifier_v3"),
-                        sensors: [.microphone: .active, .camera: .unavailable, .watch: .active], onStop: {})
+            PouringView(state: .pouring, fillPercent: 62, onStop: {})
                 .preferredColorScheme(.dark)
         case .alert:
-            PouringView(state: .approachingTarget, fillPercent: 86, fillMethod: .pitchCalibrated,
-                        source: .trainedModel(version: "SensoSoundClassifier_v3"),
-                        sensors: [.microphone: .active, .camera: .unavailable, .watch: .active], onStop: {})
+            PouringView(state: .approachingTarget, fillPercent: 86, onStop: {})
                 .preferredColorScheme(.dark)
         case .done:
             CompleteView(targetPercent: 90, onAgain: {}, onHome: {})

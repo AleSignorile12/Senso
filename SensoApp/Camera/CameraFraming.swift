@@ -23,6 +23,11 @@ nonisolated enum FramingCue: Sendable, Equatable {
 final class CameraFraming {
     private(set) var status: SensorStatus = .unavailable
     private(set) var cue: FramingCue?
+    /// A cup has been seen in `confirmFrames` analysed frames in a row (~0.7 s), so one wrong glimpse
+    /// can't unlock the pour. Stays true until `stop()`.
+    private(set) var cupConfirmed = false
+    static let confirmFrames = 2
+    @ObservationIgnored private var cupStreak = 0
     /// Average colours of the live picture, 3 × 3 row by row from the top left, already darkened for contrast.
     private(set) var sceneColors: [SIMD3<Float>]?
 
@@ -39,6 +44,8 @@ final class CameraFraming {
                 guard let self, self.capture != nil else { return }
                 self.cue = cue
                 self.status = cue == .noCup ? .lowConfidence : .active
+                self.cupStreak = cue == .noCup ? 0 : self.cupStreak + 1
+                if self.cupStreak >= Self.confirmFrames { self.cupConfirmed = true }
             }
         }, onColors: { [weak self] colors in
             Task { @MainActor in
@@ -59,6 +66,8 @@ final class CameraFraming {
         capture?.stop()
         capture = nil
         cue = nil
+        cupConfirmed = false
+        cupStreak = 0
         sceneColors = nil
         status = .unavailable
     }

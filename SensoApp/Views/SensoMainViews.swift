@@ -99,8 +99,7 @@ struct SensoRootView: View {
                     .transition(.opacity)
                     .zIndex(0)
             case .preparing, .pouring, .approachingTarget, .uncertain:
-                PouringView(state: state, cupFound: engine.cupFound, fillPercent: engine.fillPercent, fillMethod: engine.fillMethod,
-                            source: pipeline.source, sensors: sensors, sceneColors: camera.sceneColors,
+                PouringView(state: state, cupFound: engine.cupFound, fillPercent: engine.fillPercent, sceneColors: camera.sceneColors,
                             calibrating: calibratingCup != nil, onStop: calibratingCup == nil ? stop : finishCalibration)
                     // The liquid rises in; stopping fades back to the start.
                     .transition(reduceMotion ? .opacity : .asymmetric(insertion: .move(edge: .bottom), removal: .opacity))
@@ -134,13 +133,17 @@ struct SensoRootView: View {
             watch.activate()
         }
         .onChange(of: watchMessage, initial: true) { watch.send(watchMessage) }
-        // Any cue but "no cup" means a cup is in view, which lets the pour start. Before that, "no cup" is
-        // always said; the aiming tips after it are the optional camera help. None mid-pour: moving the
+        // A cup confirmed in view lets the pour start; the engine keeps saying when there's none.
+        .onChange(of: camera.cupConfirmed) { _, confirmed in
+            guard confirmed, !engine.cupFound else { return }
+            pipeline.restartFill()
+            engine.cupSeen()
+        }
+        // Aiming tips are the optional camera help, once the cup is found. None mid-pour: moving the
         // phone then would be worse than no tip.
         .onChange(of: camera.cue) {
-            guard state == .preparing, let cue = camera.cue else { return }
-            if cue != .noCup { engine.cupSeen() }
-            if cue == .noCup ? !engine.cupFound : cups.cameraHelp { feedback.framing(cue) }
+            guard state == .preparing, engine.cupFound, cups.cameraHelp, let cue = camera.cue else { return }
+            feedback.framing(cue)
         }
         .onChange(of: state.isActive) { _, active in
             if !active { camera.stop() }
@@ -254,15 +257,6 @@ struct SensoRootView: View {
             try? await Task.sleep(for: .seconds(4))
             audio.releaseSession()
         }
-    }
-
-    private var sensors: [SensorKind: SensorStatus] {
-        let microphone: SensorStatus = switch audio.state {
-        case .running: .active
-        case .interrupted: .lowConfidence
-        default: .unavailable
-        }
-        return [.microphone: microphone, .camera: camera.status, .watch: watch.isReachable ? .active : .unavailable]
     }
 
     /// What the Watch shows and buzzes.
@@ -381,9 +375,6 @@ struct PouringView: View {
     /// False while the camera is still looking for the cup; the pour can't start until it's true.
     var cupFound = true
     let fillPercent: Int?
-    var fillMethod: FillMethod?
-    let source: EstimateSource
-    let sensors: [SensorKind: SensorStatus]
     /// Live colours from the camera (3 × 3, row by row), when camera help is on.
     var sceneColors: [SIMD3<Float>]? = nil
     /// Calibration pour: the button says "Full" and saves the cup's measurements.
@@ -407,11 +398,11 @@ struct PouringView: View {
     var body: some View {
         VStack(spacing: 0) {
             VStack(spacing: 0) {
-                SensorBadge(source: source, sensors: sensors, fillMethod: fillMethod)
                 Spacer()
                 Text(headline)
                     .font(.senso(headlineSize, .semibold))
                     .accessibilityAddTraits(.isHeader)
+                    .accessibilityAction(named: calibrating ? "Full" : "Stop", onStop)
                 if let detail {
                     Text(detail)
                         .font(.senso(detailSize, .regular))
@@ -439,16 +430,21 @@ struct PouringView: View {
                     .accessibilityLabel(shownPercent.map { Text("About \($0) percent full") } ?? Text("No fill estimate yet"))
                     .accessibilityAddTraits(.updatesFrequently)
                     .accessibilityFocused($percentFocused)
+                    .accessibilityAction(named: calibrating ? "Full" : "Stop", onStop)
                 Spacer()
-                Button(action: onStop) {
-                    Text(calibrating ? "Full" : "Stop")
-                        .font(.senso(stopSize, .semibold))
-                        .padding(.horizontal, 44)
-                        .frame(minHeight: 56)
-                        .overlay(Capsule().stroke(.white, lineWidth: 2))
+                // Only a calibration pour has a button: the user says when the cup is full. A normal pour
+                // stops by swiping down, the VoiceOver Stop action or a two-finger double-tap.
+                if calibrating {
+                    Button(action: onStop) {
+                        Text("Full")
+                            .font(.senso(stopSize, .semibold))
+                            .padding(.horizontal, 44)
+                            .frame(minHeight: 56)
+                            .overlay(Capsule().stroke(.white, lineWidth: 2))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint("Saves this pour as the cup's full level.")
                 }
-                .buttonStyle(.plain)
-                .accessibilityHint(calibrating ? "Saves this pour as the cup's full level." : "Stops listening and goes back to the start.")
             }
             .foregroundStyle(.white)
             .padding(.horizontal, 24)
@@ -468,6 +464,9 @@ struct PouringView: View {
             .ignoresSafeArea()
         }
         .background { PourBackdrop(colors: sceneColors).ignoresSafeArea() }
+        .contentShape(.rect)
+        // A calibration pour ends only with Full, never by an accidental swipe.
+        .gesture(swipeDown(onStop), isEnabled: !calibrating)
         .onChange(of: fillPercent, initial: true) { _, percent in
             if let percent { level = percent }
         }
@@ -483,6 +482,7 @@ struct PouringView: View {
         switch state {
         case .preparing where !cupFound: "Looking for your cup"
         case _ where calibrating: "Calibrating"
+        case .preparing where level > 0: "Paused"
         case .preparing: "Cup found"
         case .uncertain: "Can’t hear the pour"
         default: "Keep pouring"
@@ -493,6 +493,7 @@ struct PouringView: View {
         switch state {
         case .preparing where !cupFound: "Point the back camera at your cup."
         case _ where calibrating: "Pour into the empty cup until it’s full, then tap Full."
+        case .preparing where level > 0: "Pour again when you’re ready."
         case .preparing: "Start pouring when you’re ready."
         case .approachingTarget: "Until you hear the alert."
         case .uncertain: "Keep the phone next to the cup."
@@ -532,89 +533,6 @@ private extension Color {
     }
 }
 
-/// Which sensors are on and where the estimate comes from. Not in the mock-up; required so a
-/// heuristic is never mistaken for a trained model.
-struct SensorBadge: View {
-    let source: EstimateSource
-    let sensors: [SensorKind: SensorStatus]
-    var fillMethod: FillMethod?
-
-    var body: some View {
-        // One row normally; icons above the text at large Dynamic Type sizes.
-        VStack(spacing: 4) {
-            ViewThatFits {
-                HStack(spacing: 10) { icons; Text(sourceText) }
-                VStack(spacing: 6) { icons; Text(sourceText).multilineTextAlignment(.center) }
-            }
-            if let fillMethod {
-                Text(methodText(fillMethod))
-                    .font(.system(.caption, weight: .medium).width(.expanded))
-                    .multilineTextAlignment(.center)
-            }
-        }
-        .font(.system(.footnote, weight: .semibold).width(.expanded))
-        .foregroundStyle(.white)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(.white, lineWidth: 1))
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(accessibilityText)
-    }
-
-    private var icons: some View {
-        HStack(spacing: 10) {
-            ForEach(SensorKind.allCases, id: \.self) { kind in
-                Image(systemName: symbol(kind))
-            }
-        }
-    }
-
-    private func status(_ kind: SensorKind) -> SensorStatus { sensors[kind] ?? .unavailable }
-
-    private func symbol(_ kind: SensorKind) -> String {
-        let off = status(kind) == .unavailable
-        switch kind {
-        case .microphone: return off ? "mic.slash.fill" : "mic.fill"
-        case .camera: return off ? "video.slash.fill" : "video.fill"
-        case .watch: return off ? "applewatch.slash" : "applewatch"
-        }
-    }
-
-    private var sourceText: LocalizedStringKey {
-        switch source {
-        case .trainedModel(let version): "Model \(version)"
-        case .dspFallback: "DSP Mode (Uncalibrated)"
-        case .none: "No estimate yet"
-        }
-    }
-
-    private func methodText(_ method: FillMethod) -> LocalizedStringKey {
-        switch method {
-        case .pitchCalibrated: "Level from pitch, calibrated cup"
-        case .pitchUncalibrated: "Level from pitch, rough (cup not calibrated)"
-        case .timeCalibrated: "Level from pour time, rough"
-        }
-    }
-
-    private var accessibilityText: Text {
-        let parts = SensorKind.allCases.map { kind -> Text in
-            let name: Text = switch kind {
-            case .microphone: Text("Microphone")
-            case .camera: Text("Camera")
-            case .watch: Text("Watch")
-            }
-            let state: Text = switch status(kind) {
-            case .active: Text("on")
-            case .lowConfidence: Text("weak")
-            case .unavailable: Text("off")
-            }
-            return Text("\(name) \(state). ")
-        }
-        let method = fillMethod.map { Text(". ") + Text(methodText($0)) } ?? Text("")
-        return parts.reduce(Text(""), +) + Text(sourceText) + method
-    }
-}
-
 // MARK: - Done
 
 struct CompleteView: View {
@@ -625,12 +543,11 @@ struct CompleteView: View {
     @ScaledMetric(relativeTo: .largeTitle) private var titleSize = 38
     @ScaledMetric(relativeTo: .title2) private var subtitleSize = 27
     @ScaledMetric(relativeTo: .largeTitle) private var percentSize = 88
-    @ScaledMetric(relativeTo: .largeTitle) private var againLabelSize = 56
-    @ScaledMetric(relativeTo: .title3) private var homeSize = 22
+    @ScaledMetric(relativeTo: .largeTitle) private var againLabelSize = 64
     @AccessibilityFocusState private var titleFocused: Bool
 
     /// Display-sized already; capped so the icon and label still fit the card at the largest text sizes.
-    private var againSize: CGFloat { min(againLabelSize, 64) }
+    private var againSize: CGFloat { min(againLabelSize, 72) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -638,6 +555,7 @@ struct CompleteView: View {
                 .font(.senso(titleSize))
                 .accessibilityAddTraits(.isHeader)
                 .accessibilityFocused($titleFocused)
+                .accessibilityAction(named: "Home", onHome)
                 .onAppear { titleFocused = true }
             Text("Your glass is full")
                 .font(.senso(subtitleSize, .regular))
@@ -651,41 +569,34 @@ struct CompleteView: View {
                 .frame(maxWidth: .infinity)
                 .accessibilityLabel("\(targetPercent) percent full")
             Spacer(minLength: 16)
-            VStack(spacing: 20) {
-                Button(action: onAgain) {
-                    VStack(spacing: 8) {
-                        Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: againSize * 1.3, weight: .semibold))
-                            .accessibilityHidden(true)
-                        Text("AGAIN")
-                            .font(.senso(againSize))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.4)
-                    }
-                    .foregroundStyle(SensoColor.water)
-                    .padding(24)
-                    .frame(maxWidth: .infinity, minHeight: 220)
-                    .background(.white, in: .rect(cornerRadius: 34))
+            Button(action: onAgain) {
+                VStack(spacing: 12) {
+                    Image(systemName: "arrow.counterclockwise")
+                        .font(.system(size: againSize * 1.6, weight: .semibold))
+                        .accessibilityHidden(true)
+                    Text("AGAIN")
+                        .font(.senso(againSize))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.4)
                 }
-                .buttonStyle(.plain)
-                .accessibilityHint("Starts a new pour.")
-                // Not in the mock-up, but a screen needs a way back (HIG); styled like Stop so AGAIN stays the main action.
-                Button(action: onHome) {
-                    Text("Home")
-                        .font(.senso(homeSize, .semibold))
-                        .padding(.horizontal, 44)
-                        .frame(minHeight: 56)
-                        .overlay(Capsule().stroke(.white, lineWidth: 2))
-                        .contentShape(Capsule())
-                }
-                .buttonStyle(.plain)
-                .accessibilityHint("Goes back to the start screen.")
+                .foregroundStyle(SensoColor.water)
+                .padding(24)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(.white, in: .rect(cornerRadius: 40))
             }
+            .buttonStyle(.plain)
+            // As in the design: the card takes the bottom half of the screen.
+            .containerRelativeFrame(.vertical) { height, _ in height * 0.46 }
+            .accessibilityHint("Starts a new pour.")
+            .accessibilityAction(named: "Home", onHome)
         }
         .foregroundStyle(.white)
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 30)
         .padding(.top, 48)
-        .padding(.bottom, 8)
+        .padding(.bottom, 24)
+        // No Home button, as designed: swipe down (or the VoiceOver Home action) goes back to the start.
+        .contentShape(.rect)
+        .gesture(swipeDown(onHome))
         .background {
             // The glass is full: liquid right up to just under the status bar.
             MovingLiquid(amplitude: 4, wavelength: 100, color: SensoColor.water)
@@ -697,22 +608,28 @@ struct CompleteView: View {
     }
 }
 
+/// Leaving a full-screen step by swiping down, as people dismiss a sheet. It needs a deliberate, mostly
+/// vertical drag, so a hand near the screen while pouring doesn't stop the pour.
+private func swipeDown(_ action: @escaping () -> Void) -> some Gesture {
+    DragGesture(minimumDistance: 30).onEnded { drag in
+        if drag.translation.height > 150, abs(drag.translation.width) < drag.translation.height / 2 { action() }
+    }
+}
+
 // MARK: - Previews (design fixtures, not sensor data)
 
 #Preview("Ready") { ReadyView(onStart: {}) }
 
 #Preview("Pouring 45%") {
-    PouringView(state: .pouring, fillPercent: 45, source: .dspFallback,
-                sensors: [.microphone: .active], onStop: {})
+    PouringView(state: .pouring, fillPercent: 45, onStop: {})
 }
 
 #Preview("High alert 72%") {
-    PouringView(state: .approachingTarget, fillPercent: 72, source: .dspFallback,
-                sensors: [.microphone: .active, .watch: .active], onStop: {})
+    PouringView(state: .approachingTarget, fillPercent: 72, onStop: {})
 }
 
 #Preview("Listening") {
-    PouringView(state: .preparing, fillPercent: nil, source: .none, sensors: [.microphone: .active], onStop: {})
+    PouringView(state: .preparing, fillPercent: nil, onStop: {})
 }
 
 #Preview("Done") { CompleteView(onAgain: {}, onHome: {}) }

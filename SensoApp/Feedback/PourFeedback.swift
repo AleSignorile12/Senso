@@ -1,6 +1,7 @@
 // PourFeedback.swift
-// What the user hears while pouring. One voice at a time: VoiceOver announcements when VoiceOver is on,
-// otherwise the app's own speech synthesizer, never both. Short earcons mark the high-alert band and the stop.
+// What the user hears while pouring. Words go only through Apple's VoiceOver, in the user's own voice and
+// rate: the app has no voice of its own. Short earcons (not speech) mark the high-alert band and the stop,
+// with or without VoiceOver.
 //
 // The iPhone never vibrates here, on purpose: vibration travels through the table into the cup and the
 // microphone, and a buzzing phone is easy to mistake for the Watch. Haptics belong to the Watch only.
@@ -15,7 +16,6 @@ final class PourFeedback {
     /// Off in Settings for users who prefer the Watch alone. Urgent alerts still speak.
     var speechEnabled = true
 
-    @ObservationIgnored private let synthesizer = AVSpeechSynthesizer()
     @ObservationIgnored private var players: [Earcon: AVAudioPlayer] = [:]
     @ObservationIgnored private var lastFramingCue: FramingCue?
     @ObservationIgnored private var lastFramingTime = Date.distantPast
@@ -24,11 +24,15 @@ final class PourFeedback {
         switch event {
         // The cup check gates the whole pour, so these two speak even with spoken guidance off.
         case .listening:
-            // This already says there's no cup yet, so the camera's first "no cup" isn't repeated over it.
-            lastFramingCue = .noCup
-            lastFramingTime = .now
+            // Each pour starts the aiming tips afresh.
+            lastFramingCue = nil
             say(String(localized: "Looking for your cup. Point the back camera at it."), urgent: true)
         case .cupFound: say(String(localized: "Cup found. Start pouring when you're ready."), urgent: true)
+        case .stillNoCup(pouring: true):
+            say(String(localized: "Stop pouring. I can't see a cup yet. Point the back camera at your cup."), urgent: true)
+        case .stillNoCup(pouring: false): say(String(localized: "Still looking for your cup."), urgent: true)
+        case .levelUnknown:
+            say(String(localized: "I can't hear the level. I can't warn you in time. Check with your finger."), urgent: true)
         case .pouringDetected: say(String(localized: "Pouring."))
         case .pouringPaused: say(String(localized: "Paused."))
         case .milestone(let percent): say(String(localized: "\(percent) percent."))
@@ -58,8 +62,7 @@ final class PourFeedback {
         case .moveCloser: String(localized: "Move closer.")
         case .moveBack: String(localized: "Move back.")
         }
-        // No cup means the pour can't start, so the user must hear why.
-        say(text, urgent: cue == .noCup)
+        say(text)
     }
 
     /// The pour can't start without the camera to find the cup.
@@ -85,18 +88,11 @@ final class PourFeedback {
     // MARK: Speech
 
     private func say(_ text: String, urgent: Bool = false) {
-        guard speechEnabled || urgent else { return }
-        if UIAccessibility.isVoiceOverRunning {
-            // VoiceOver speaks it in the user's own voice and rate; high priority interrupts other speech.
-            var announcement = AttributedString(text)
-            announcement.accessibilitySpeechAnnouncementPriority = urgent ? .high : .default
-            AccessibilityNotification.Announcement(announcement).post()
-            return
-        }
-        if urgent { synthesizer.stopSpeaking(at: .immediate) }
-        let utterance = AVSpeechUtterance(string: text)
-        utterance.prefersAssistiveTechnologySettings = true
-        synthesizer.speak(utterance)
+        guard speechEnabled || urgent, UIAccessibility.isVoiceOverRunning else { return }
+        // High priority interrupts whatever VoiceOver is reading.
+        var announcement = AttributedString(text)
+        announcement.accessibilitySpeechAnnouncementPriority = urgent ? .high : .default
+        AccessibilityNotification.Announcement(announcement).post()
     }
 
     // MARK: Earcons

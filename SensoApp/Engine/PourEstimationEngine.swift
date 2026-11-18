@@ -13,9 +13,8 @@ import Observation
 
 /// Moments the feedback layer reacts to.
 nonisolated enum PourEvent: Sendable, Equatable {
-    case listening             // session started, looking for the cup
-    case cupFound              // the camera saw a cup: pouring may start
-    case stillNoCup(pouring: Bool) // no cup yet: a reminder, or a warning when liquid is already flowing
+    case listening             // session started
+    case cupFound              // the optional camera saw a cup: pouring sounds are trusted a little sooner
     case pouringDetected
     case levelUnknown          // pouring, but no level estimate for a while: the user must check by touch
     case pouringPaused         // flow stopped before the target
@@ -40,8 +39,11 @@ final class PourEstimationEngine {
     var calibrating = false
     /// The Watch feels the wrist tilted as if pouring: a slightly weaker sound is enough to start.
     var watchTilting = false
-    /// The camera has seen a cup this session. Until then no pour can start and no level is tracked.
+    /// The optional camera has seen a cup this session. Not required: Senso works by sound alone.
     private(set) var cupFound = false
+    /// The first pour sound of this session was heard. Until then the level stays at 0, so room noise
+    /// before the pour can't raise it (the pipeline restarts its estimate at this moment).
+    private(set) var pourStarted = false
 
     static let speechReactionSeconds = 0.9
     static let watchReactionSeconds = 0.75
@@ -50,14 +52,13 @@ final class PourEstimationEngine {
     /// 1.4 false starts per minute of other sounds (0.6 gave 2.0). See MLTraining/README.md.
     static let startPouringConfidence = 0.7
     static let startPouringConfidenceWithTilt = 0.45
+    /// A cup in the camera's view makes a pour more likely: a slightly weaker sound is enough to start.
+    static let startPouringConfidenceWithCup = 0.55
     static let keepPouringConfidence = 0.4
     /// How long the classifier must say "not pouring" before the pour counts as paused.
     static let pauseSeconds = 1.5
     /// Fill estimates older than this are ignored.
     static let staleFillSeconds = 1.0
-    /// While no cup is found: remind this often, or warn this often if liquid is already flowing.
-    static let noCupReminderSeconds = 8.0
-    static let noCupWarningSeconds = 3.0
     /// Pouring this long without a level estimate: say so, the stop alert can't come.
     static let levelUnknownSeconds = 3.0
 
@@ -65,7 +66,6 @@ final class PourEstimationEngine {
     @ObservationIgnored private var announced: Set<Int> = []
     @ObservationIgnored private var quietSince: Date?
     @ObservationIgnored private var lastFill: (reading: FillReading, time: Date)?
-    @ObservationIgnored private var lastCupPrompt: Date?
     @ObservationIgnored private var levelMissingSince: Date?
     @ObservationIgnored private var warnedLevelMissing = false
 
@@ -79,13 +79,13 @@ final class PourEstimationEngine {
         quietSince = nil
         lastFill = nil
         cupFound = false
-        lastCupPrompt = nil
+        pourStarted = false
         levelMissingSince = nil
         warnedLevelMissing = false
         onEvent(.listening)
     }
 
-    /// The camera recognised a cup (or glass, mug…). Once per session; the pour can start from now on.
+    /// The camera recognised a cup (or glass, mug…). Once per session.
     func cupSeen() {
         guard state.isActive, !cupFound else { return }
         cupFound = true
@@ -118,23 +118,16 @@ final class PourEstimationEngine {
 
     func ingest(_ reading: SensorReading) {
         guard state.isActive, state != .uncertain else { return }
-        let startThreshold = watchTilting ? Self.startPouringConfidenceWithTilt : Self.startPouringConfidence
+        let startThreshold = min(Self.startPouringConfidence,
+                                 watchTilting ? Self.startPouringConfidenceWithTilt : 1,
+                                 cupFound ? Self.startPouringConfidenceWithCup : 1)
         let flowing = state == .preparing
             ? reading.pouringConfidence >= startThreshold
             : reading.pouringConfidence >= Self.keepPouringConfidence
-        guard cupFound else {
-            // No pour starts without a cup in view. Keep saying so, and warn at once if liquid is flowing.
-            let since = reading.timestamp.timeIntervalSince(lastCupPrompt ?? reading.timestamp)
-            if lastCupPrompt == nil { lastCupPrompt = reading.timestamp }
-            if since >= (flowing ? Self.noCupWarningSeconds : Self.noCupReminderSeconds) {
-                lastCupPrompt = reading.timestamp
-                onEvent(.stillNoCup(pouring: flowing))
-            }
-            return
-        }
         if flowing {
             quietSince = nil
             if state == .preparing {
+                pourStarted = true
                 state = isHighAlert ? .approachingTarget : .pouring
                 onEvent(.pouringDetected)
             }
@@ -160,10 +153,9 @@ final class PourEstimationEngine {
         }
     }
 
-    /// Ignored until the cup is found: sounds before that aren't a pour into this cup, and the level
-    /// starts from 0 at that moment (the pipeline resets its estimate then too).
+    /// Ignored until the first pour sound: the level starts from 0 then.
     func ingest(_ fill: FillReading?, at time: Date = .now) {
-        guard state.isActive, cupFound else { return }
+        guard state.isActive, pourStarted else { return }
         if let fill {
             lastFill = (fill, time)
         } else if let last = lastFill, time.timeIntervalSince(last.time) > Self.staleFillSeconds {
@@ -189,8 +181,8 @@ final class PourEstimationEngine {
             onEvent(.approachingTarget)
         }
 
-        // Any active state: the classifier can miss or lose the pour (paused, not yet detected) while the
-        // level still climbs, and the stop alert must come regardless.
+        // Any active state: the classifier can lose the pour (a pause) while the level still climbs, and
+        // the stop alert must come regardless.
         let projected = reading.fraction + reading.ratePerSecond * reactionSeconds + reading.uncertainty / 2
         if state.isActive, projected * 100 >= Double(targetPercent) {
             state = .complete

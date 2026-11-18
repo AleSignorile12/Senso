@@ -1,5 +1,6 @@
 // CameraFraming.swift
-// Runs before every pour: a pour can only start once a cup is in view. Optional spoken tips help aim: "Move the phone left",
+// Optional (Settings): looks for the cup before a pour. A cup in view lets a pour be recognised a little
+// sooner; Senso never needs it. It also gives aiming tips: "Move the phone left",
 // "Move closer", "Cup centred". Vision's built-in image classifier says whether a cup-like object is in
 // view; the objectness saliency request says where the main object sits. When neither is sure, the cue
 // is "no cup", never a guess. The camera doesn't estimate fill.

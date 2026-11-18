@@ -2,7 +2,6 @@
 // iPhone UI from the blue "water" design: Ready → Pouring (normal / high alert) → Done.
 // PourEstimationEngine decides the state and the number; PourFeedback speaks; the views only show.
 
-import AVFoundation
 import SwiftUI
 
 @main
@@ -56,8 +55,6 @@ struct SensoRootView: View {
     @State private var calibratingCup: ContainerProfile?
     /// A pour was running when Senso went to the background; say so when it's back.
     @State private var stoppedInBackground = false
-    /// The last pour couldn't start because the camera, needed to find the cup, isn't usable.
-    @State private var cameraProblem = false
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
     private let launchRequest = PourLaunchRequest.shared
@@ -91,15 +88,13 @@ struct SensoRootView: View {
         ZStack {
             switch state {
             case .ready, .unavailable:
-                ReadyView(problem: state == .unavailable ? micProblem
-                            : cameraProblem ? "Senso needs the camera to find your cup. Tap Fill up to open Settings." : nil,
-                          onStart: { start() },
+                ReadyView(problem: state == .unavailable ? micProblem : nil, onStart: { start() },
                           cupName: cups.selected?.name, onOpenCups: { showingCups = true },
                           onOpenDataCollection: Self.dataCollectionEnabled ? { showingDataCollection = true } : nil)
                     .transition(.opacity)
                     .zIndex(0)
             case .preparing, .pouring, .approachingTarget, .uncertain:
-                PouringView(state: state, cupFound: engine.cupFound, fillPercent: engine.fillPercent, sceneColors: camera.sceneColors,
+                PouringView(state: state, fillPercent: engine.fillPercent, sceneColors: camera.sceneColors,
                             calibrating: calibratingCup != nil, onStop: calibratingCup == nil ? stop : finishCalibration)
                     // The liquid rises in; stopping fades back to the start.
                     .transition(reduceMotion ? .opacity : .asymmetric(insertion: .move(edge: .bottom), removal: .opacity))
@@ -134,15 +129,18 @@ struct SensoRootView: View {
         }
         .onChange(of: watchMessage, initial: true) { watch.send(watchMessage) }
         // A cup confirmed in view lets the pour start; the engine keeps saying when there's none.
+        // Optional camera: a cup in view lets a slightly weaker pour sound count. It never holds the pour up.
         .onChange(of: camera.cupConfirmed) { _, confirmed in
-            guard confirmed, !engine.cupFound else { return }
-            pipeline.restartFill()
-            engine.cupSeen()
+            if confirmed { engine.cupSeen() }
+        }
+        // The level counts from the first pour sound, so noise heard before it can't raise the counter.
+        .onChange(of: engine.pourStarted) { _, started in
+            if started { pipeline.restartFill() }
         }
         // Aiming tips are the optional camera help, once the cup is found. None mid-pour: moving the
         // phone then would be worse than no tip.
         .onChange(of: camera.cue) {
-            guard state == .preparing, engine.cupFound, cups.cameraHelp, let cue = camera.cue else { return }
+            guard state == .preparing, let cue = camera.cue else { return }
             feedback.framing(cue)
         }
         .onChange(of: state.isActive) { _, active in
@@ -204,12 +202,10 @@ struct SensoRootView: View {
     }
 
     private func start(calibrating cup: ContainerProfile? = nil) {
-        let cameraDenied = [.denied, .restricted].contains(AVCaptureDevice.authorizationStatus(for: .video))
-        if audio.state == .permissionDenied || cameraDenied, let settings = URL(string: UIApplication.openSettingsURLString) {
+        if audio.state == .permissionDenied, let settings = URL(string: UIApplication.openSettingsURLString) {
             openURL(settings)
             return
         }
-        cameraProblem = false
         calibratingCup = cup
         engine.targetPercent = cups.targetPercent
         engine.calibrating = cup != nil
@@ -217,16 +213,12 @@ struct SensoRootView: View {
         engine.reactionSeconds = watch.isReachable ? PourEstimationEngine.watchReactionSeconds : PourEstimationEngine.speechReactionSeconds
         feedback.speechEnabled = cups.speechEnabled
         engine.begin()
-        // No pour without a cup in view, so no pour without the camera.
-        Task {
-            await camera.start()
-            if !state.isActive {
-                camera.stop()
-            } else if camera.status == .unavailable {
-                calibratingCup = nil
-                stop()
-                cameraProblem = true
-                feedback.announceNoCamera()
+        // The camera is an option (Settings): it runs alongside the microphone and never delays the pour.
+        // Without permission or a camera, Senso simply works by sound.
+        if cups.cameraHelp {
+            Task {
+                await camera.start()
+                if !state.isActive { camera.stop() }
             }
         }
         Task {
@@ -372,8 +364,6 @@ struct ReadyView: View {
 
 struct PouringView: View {
     let state: PourState
-    /// False while the camera is still looking for the cup; the pour can't start until it's true.
-    var cupFound = true
     let fillPercent: Int?
     /// Live colours from the camera (3 × 3, row by row), when camera help is on.
     var sceneColors: [SIMD3<Float>]? = nil
@@ -480,10 +470,9 @@ struct PouringView: View {
 
     private var headline: LocalizedStringKey {
         switch state {
-        case .preparing where !cupFound: "Looking for your cup"
         case _ where calibrating: "Calibrating"
         case .preparing where level > 0: "Paused"
-        case .preparing: "Cup found"
+        case .preparing: "Listening…"
         case .uncertain: "Can’t hear the pour"
         default: "Keep pouring"
         }
@@ -491,7 +480,6 @@ struct PouringView: View {
 
     private var detail: LocalizedStringKey? {
         switch state {
-        case .preparing where !cupFound: "Point the back camera at your cup."
         case _ where calibrating: "Pour into the empty cup until it’s full, then tap Full."
         case .preparing where level > 0: "Pour again when you’re ready."
         case .preparing: "Start pouring when you’re ready."

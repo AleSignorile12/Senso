@@ -22,15 +22,11 @@ final class PourFeedback {
 
     func handle(_ event: PourEvent) {
         switch event {
-        // The cup check gates the whole pour, so these two speak even with spoken guidance off.
         case .listening:
             // Each pour starts the aiming tips afresh.
             lastFramingCue = nil
-            say(String(localized: "Looking for your cup. Point the back camera at it."), urgent: true)
-        case .cupFound: say(String(localized: "Cup found. Start pouring when you're ready."), urgent: true)
-        case .stillNoCup(pouring: true):
-            say(String(localized: "Stop pouring. I can't see a cup yet. Point the back camera at your cup."), urgent: true)
-        case .stillNoCup(pouring: false): say(String(localized: "Still looking for your cup."), urgent: true)
+            say(String(localized: "Listening. Start pouring when you're ready."))
+        case .cupFound: say(String(localized: "Cup found."))
         case .levelUnknown:
             say(String(localized: "I can't hear the level. I can't warn you in time. Check with your finger."), urgent: true)
         case .pouringDetected: say(String(localized: "Pouring."))
@@ -63,11 +59,6 @@ final class PourFeedback {
         case .moveBack: String(localized: "Move back.")
         }
         say(text)
-    }
-
-    /// The pour can't start without the camera to find the cup.
-    func announceNoCamera() {
-        say(String(localized: "Senso needs the camera to find your cup. Turn on camera access in Settings."), urgent: true)
     }
 
     /// After a calibration pour: say what was learned, since the screen just changed.

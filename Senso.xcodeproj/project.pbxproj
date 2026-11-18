@@ -450,7 +450,7 @@
 				INFOPLIST_FILE = "Senso-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Senso;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Senso uses the camera to check there is a cup in front of your iPhone before you pour, to help you aim at it, and to tint the pouring screen with the colours it sees. Images are analysed on this iPhone and never saved.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "If you turn on the camera in Settings, Senso looks for your cup to recognise the pour sooner, helps you point your iPhone at it, and tints the pouring screen with the colours it sees. Images are analysed on this iPhone and never saved.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Senso listens to the sound of liquid pouring so it can tell you when your cup is nearly full. Audio is analysed on this iPhone.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -481,7 +481,7 @@
 				INFOPLIST_FILE = "Senso-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Senso;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Senso uses the camera to check there is a cup in front of your iPhone before you pour, to help you aim at it, and to tint the pouring screen with the colours it sees. Images are analysed on this iPhone and never saved.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "If you turn on the camera in Settings, Senso looks for your cup to recognise the pour sooner, helps you point your iPhone at it, and tints the pouring screen with the colours it sees. Images are analysed on this iPhone and never saved.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Senso listens to the sound of liquid pouring so it can tell you when your cup is nearly full. Audio is analysed on this iPhone.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

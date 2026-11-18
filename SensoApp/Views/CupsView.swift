@@ -18,8 +18,8 @@ final class CupStore {
     var speechEnabled: Bool {
         didSet { defaults.set(speechEnabled, forKey: Keys.speech) }
     }
-    /// Spoken tips for aiming the camera at the cup before pouring ("Move left"…). Off by default. The camera
-    /// itself always runs before a pour, to check there is a cup.
+    /// Optional camera: looks for the cup before pouring, so a pour is recognised a little sooner, and
+    /// gives aiming tips ("Move left"…). Off by default (battery, privacy); Senso works by sound alone.
     var cameraHelp: Bool {
         didSet { defaults.set(cameraHelp, forKey: Keys.cameraHelp) }
     }
@@ -136,7 +136,7 @@ struct CupsView: View {
                     }
                     Toggle("Spoken guidance", isOn: $store.speechEnabled)
                     Toggle("Start listening when Senso opens", isOn: $store.autoStart)
-                    Toggle("Spoken tips to aim the camera", isOn: $store.cameraHelp)
+                    Toggle("Use the camera to find the cup", isOn: $store.cameraHelp)
                 } header: {
                     Text("Alert")
                 } footer: {

@@ -2,6 +2,7 @@
 // iPhone UI from the blue "water" design: Ready → Pouring (normal / high alert) → Done.
 // PourEstimationEngine decides the state and the number; PourFeedback speaks; the views only show.
 
+import AVFoundation
 import SwiftUI
 
 @main
@@ -55,6 +56,8 @@ struct SensoRootView: View {
     @State private var calibratingCup: ContainerProfile?
     /// A pour was running when Senso went to the background; say so when it's back.
     @State private var stoppedInBackground = false
+    /// The last pour couldn't start because the camera, needed to find the cup, isn't usable.
+    @State private var cameraProblem = false
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
     private let launchRequest = PourLaunchRequest.shared
@@ -88,13 +91,15 @@ struct SensoRootView: View {
         ZStack {
             switch state {
             case .ready, .unavailable:
-                ReadyView(problem: state == .unavailable ? micProblem : nil, onStart: { start() },
+                ReadyView(problem: state == .unavailable ? micProblem
+                            : cameraProblem ? "Senso needs the camera to find your cup. Tap Fill up to open Settings." : nil,
+                          onStart: { start() },
                           cupName: cups.selected?.name, onOpenCups: { showingCups = true },
                           onOpenDataCollection: Self.dataCollectionEnabled ? { showingDataCollection = true } : nil)
                     .transition(.opacity)
                     .zIndex(0)
             case .preparing, .pouring, .approachingTarget, .uncertain:
-                PouringView(state: state, fillPercent: engine.fillPercent, fillMethod: engine.fillMethod,
+                PouringView(state: state, cupFound: engine.cupFound, fillPercent: engine.fillPercent, fillMethod: engine.fillMethod,
                             source: pipeline.source, sensors: sensors, sceneColors: camera.sceneColors,
                             calibrating: calibratingCup != nil, onStop: calibratingCup == nil ? stop : finishCalibration)
                     // The liquid rises in; stopping fades back to the start.
@@ -129,9 +134,13 @@ struct SensoRootView: View {
             watch.activate()
         }
         .onChange(of: watchMessage, initial: true) { watch.send(watchMessage) }
-        // Framing tips only before the pour: moving the phone mid-pour would be worse than no tip.
+        // Any cue but "no cup" means a cup is in view, which lets the pour start. Before that, "no cup" is
+        // always said; the aiming tips after it are the optional camera help. None mid-pour: moving the
+        // phone then would be worse than no tip.
         .onChange(of: camera.cue) {
-            if state == .preparing, let cue = camera.cue { feedback.framing(cue) }
+            guard state == .preparing, let cue = camera.cue else { return }
+            if cue != .noCup { engine.cupSeen() }
+            if cue == .noCup ? !engine.cupFound : cups.cameraHelp { feedback.framing(cue) }
         }
         .onChange(of: state.isActive) { _, active in
             if !active { camera.stop() }
@@ -192,10 +201,12 @@ struct SensoRootView: View {
     }
 
     private func start(calibrating cup: ContainerProfile? = nil) {
-        if audio.state == .permissionDenied, let settings = URL(string: UIApplication.openSettingsURLString) {
+        let cameraDenied = [.denied, .restricted].contains(AVCaptureDevice.authorizationStatus(for: .video))
+        if audio.state == .permissionDenied || cameraDenied, let settings = URL(string: UIApplication.openSettingsURLString) {
             openURL(settings)
             return
         }
+        cameraProblem = false
         calibratingCup = cup
         engine.targetPercent = cups.targetPercent
         engine.calibrating = cup != nil
@@ -203,7 +214,18 @@ struct SensoRootView: View {
         engine.reactionSeconds = watch.isReachable ? PourEstimationEngine.watchReactionSeconds : PourEstimationEngine.speechReactionSeconds
         feedback.speechEnabled = cups.speechEnabled
         engine.begin()
-        if cups.cameraHelp, cup == nil { Task { await camera.start() } }
+        // No pour without a cup in view, so no pour without the camera.
+        Task {
+            await camera.start()
+            if !state.isActive {
+                camera.stop()
+            } else if camera.status == .unavailable {
+                calibratingCup = nil
+                stop()
+                cameraProblem = true
+                feedback.announceNoCamera()
+            }
+        }
         Task {
             await pipeline.start(with: audio, calibration: cup == nil ? cups.selected?.calibration : nil, calibrating: cup != nil)
             if audio.state != .running { engine.microphoneChanged(audio.state) }
@@ -356,6 +378,8 @@ struct ReadyView: View {
 
 struct PouringView: View {
     let state: PourState
+    /// False while the camera is still looking for the cup; the pour can't start until it's true.
+    var cupFound = true
     let fillPercent: Int?
     var fillMethod: FillMethod?
     let source: EstimateSource
@@ -371,6 +395,14 @@ struct PouringView: View {
     @ScaledMetric(relativeTo: .title2) private var detailSize = 30
     @ScaledMetric(relativeTo: .largeTitle) private var percentSize = 88
     @ScaledMetric(relativeTo: .title3) private var stopSize = 22
+    /// The last known level, so the liquid holds its height when an estimate drops out.
+    @State private var level = 0
+
+    /// The counter starts at 0 before the pour and holds the level during a pause; mid-pour without an
+    /// estimate it shows a dash, never a made-up number.
+    private var shownPercent: Int? {
+        fillPercent ?? (state == .preparing && !calibrating ? level : nil)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -397,14 +429,14 @@ struct PouringView: View {
 
             VStack(spacing: 0) {
                 Spacer()
-                Text(fillText(fillPercent))
+                Text(fillText(shownPercent))
                     .font(.senso(percentSize))
                     .lineLimit(1)
                     .minimumScaleFactor(0.3)
                     // The digits roll from one value to the next instead of jumping.
-                    .contentTransition(.numericText(value: Double(fillPercent ?? 0)))
-                    .animation(.smooth(duration: 0.6), value: fillPercent)
-                    .accessibilityLabel(fillPercent.map { Text("About \($0) percent full") } ?? Text("No fill estimate yet"))
+                    .contentTransition(.numericText(value: Double(shownPercent ?? 0)))
+                    .animation(.smooth(duration: 0.6), value: shownPercent)
+                    .accessibilityLabel(shownPercent.map { Text("About \($0) percent full") } ?? Text("No fill estimate yet"))
                     .accessibilityAddTraits(.updatesFrequently)
                     .accessibilityFocused($percentFocused)
                 Spacer()
@@ -424,12 +456,21 @@ struct PouringView: View {
             .padding(.bottom, 8)
             .frame(maxWidth: .infinity)
             .containerRelativeFrame(.vertical) { height, _ in height * 0.44 }
-            .background {
+        }
+        .background {
+            // The liquid is the level: it starts at the bottom and rises with the glass.
+            GeometryReader { proxy in
                 MovingLiquid(amplitude: 7, wavelength: 100, color: SensoColor.water)
-                    .ignoresSafeArea(edges: .bottom)
+                    .frame(height: max(20, proxy.size.height * CGFloat(level) / 100))
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+                    .animation(.smooth(duration: 0.6), value: level)
             }
+            .ignoresSafeArea()
         }
         .background { PourBackdrop(colors: sceneColors).ignoresSafeArea() }
+        .onChange(of: fillPercent, initial: true) { _, percent in
+            if let percent { level = percent }
+        }
         // Smart Invert would turn the blue liquid orange.
         .accessibilityIgnoresInvertColors()
         // When the pour starts, VoiceOver moves to the number that matters.
@@ -440,8 +481,9 @@ struct PouringView: View {
 
     private var headline: LocalizedStringKey {
         switch state {
+        case .preparing where !cupFound: "Looking for your cup"
         case _ where calibrating: "Calibrating"
-        case .preparing: "Listening…"
+        case .preparing: "Cup found"
         case .uncertain: "Can’t hear the pour"
         default: "Keep pouring"
         }
@@ -449,6 +491,7 @@ struct PouringView: View {
 
     private var detail: LocalizedStringKey? {
         switch state {
+        case .preparing where !cupFound: "Point the back camera at your cup."
         case _ where calibrating: "Pour into the empty cup until it’s full, then tap Full."
         case .preparing: "Start pouring when you’re ready."
         case .approachingTarget: "Until you hear the alert."

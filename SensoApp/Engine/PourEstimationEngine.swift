@@ -13,7 +13,8 @@ import Observation
 
 /// Moments the feedback layer reacts to.
 nonisolated enum PourEvent: Sendable, Equatable {
-    case listening             // session started
+    case listening             // session started, looking for the cup
+    case cupFound              // the camera saw a cup: pouring may start
     case pouringDetected
     case pouringPaused         // flow stopped before the target
     case milestone(Int)        // fill crossed 25, 50, 75 or 85 %
@@ -37,6 +38,8 @@ final class PourEstimationEngine {
     var calibrating = false
     /// The Watch feels the wrist tilted as if pouring: a slightly weaker sound is enough to start.
     var watchTilting = false
+    /// The camera has seen a cup this session. Until then no pour can start and no level is tracked.
+    private(set) var cupFound = false
 
     static let speechReactionSeconds = 0.9
     static let watchReactionSeconds = 0.75
@@ -65,7 +68,15 @@ final class PourEstimationEngine {
         announced = []
         quietSince = nil
         lastFill = nil
+        cupFound = false
         onEvent(.listening)
+    }
+
+    /// The camera recognised a cup (or glass, mug…). Once per session; the pour can start from now on.
+    func cupSeen() {
+        guard state.isActive, !cupFound else { return }
+        cupFound = true
+        onEvent(.cupFound)
     }
 
     func end() {
@@ -93,7 +104,7 @@ final class PourEstimationEngine {
     }
 
     func ingest(_ reading: SensorReading) {
-        guard state.isActive, state != .uncertain else { return }
+        guard state.isActive, state != .uncertain, cupFound else { return }
         let startThreshold = watchTilting ? Self.startPouringConfidenceWithTilt : Self.startPouringConfidence
         let flowing = state == .preparing
             ? reading.pouringConfidence >= startThreshold
@@ -115,7 +126,7 @@ final class PourEstimationEngine {
     }
 
     func ingest(_ fill: FillReading?, at time: Date = .now) {
-        guard state.isActive else { return }
+        guard state.isActive, cupFound else { return }
         if let fill {
             lastFill = (fill, time)
         } else if let last = lastFill, time.timeIntervalSince(last.time) > Self.staleFillSeconds {

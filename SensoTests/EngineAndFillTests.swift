@@ -119,9 +119,27 @@ struct PourEngineTests {
         return (engine, { events })
     }
 
+    @Test func `nothing starts until the camera has seen a cup`() {
+        let (engine, events) = makeEngine()
+        engine.begin()
+        engine.ingest(reading(0.95, at: 0))
+        engine.ingest(fill(0.5))
+        #expect(engine.state == .preparing, "a loud pour without a cup in view doesn't start")
+        #expect(engine.fillPercent == nil)
+        engine.cupSeen()
+        engine.cupSeen()
+        engine.ingest(reading(0.95, at: 0.25))
+        #expect(engine.state == .pouring)
+        #expect(events() == [.listening, .cupFound, .pouringDetected], "cup found is said once")
+        engine.end()
+        engine.begin()
+        #expect(!engine.cupFound, "every pour looks for the cup again")
+    }
+
     @Test func `pouring needs a confident reading and pauses only after a quiet stretch`() {
         let (engine, events) = makeEngine()
         engine.begin()
+        engine.cupSeen()
         #expect(engine.state == .preparing)
         engine.ingest(reading(0.5, at: 0))
         #expect(engine.state == .preparing, "0.5 is below the start threshold")
@@ -134,23 +152,25 @@ struct PourEngineTests {
         #expect(engine.state == .pouring, "quiet for only 1 s")
         engine.ingest(reading(0.1, at: 2.6))
         #expect(engine.state == .preparing)
-        #expect(events() == [.listening, .pouringDetected, .pouringPaused])
+        #expect(events() == [.listening, .cupFound, .pouringDetected, .pouringPaused])
     }
 
     @Test func `milestones are announced once and the alert band starts at 70`() {
         let (engine, events) = makeEngine()
         engine.begin()
+        engine.cupSeen()
         engine.ingest(reading(0.9, at: 0))
         for fraction in [0.2, 0.26, 0.3, 0.26, 0.51, 0.72] { engine.ingest(fill(fraction, rate: 0)) }
         #expect(engine.fillPercent == 72)
         #expect(engine.state == .approachingTarget)
-        #expect(events() == [.listening, .pouringDetected, .milestone(25), .milestone(50), .approachingTarget])
+        #expect(events() == [.listening, .cupFound, .pouringDetected, .milestone(25), .milestone(50), .approachingTarget])
     }
 
     @Test func `stop fires early by the fill rate, reaction time and uncertainty`() {
         let (engine, events) = makeEngine()
         engine.targetPercent = 90
         engine.begin()
+        engine.cupSeen()
         engine.ingest(reading(0.9, at: 0))
         // 0.75 + 0.1 × 0.9 + 0.1 / 2 = 0.89: not yet.
         engine.ingest(fill(0.75))
@@ -164,6 +184,7 @@ struct PourEngineTests {
     @Test func `a lost estimate shows no number instead of a stale one`() {
         let (engine, _) = makeEngine()
         engine.begin()
+        engine.cupSeen()
         engine.ingest(reading(0.9, at: 0))
         engine.ingest(fill(0.4, rate: 0), at: start)
         #expect(engine.fillPercent == 40)
@@ -176,6 +197,7 @@ struct PourEngineTests {
     @Test func `an interruption makes the state uncertain and says so`() {
         let (engine, events) = makeEngine()
         engine.begin()
+        engine.cupSeen()
         engine.ingest(reading(0.9, at: 0))
         engine.microphoneChanged(.interrupted)
         #expect(engine.state == .uncertain)
@@ -190,6 +212,7 @@ struct PourEngineTests {
         let (engine, events) = makeEngine()
         engine.calibrating = true
         engine.begin()
+        engine.cupSeen()
         engine.ingest(reading(0.9, at: 0))
         engine.ingest(fill(0.99))
         #expect(engine.fillPercent == nil)

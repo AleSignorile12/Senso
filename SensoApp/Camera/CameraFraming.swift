@@ -1,5 +1,5 @@
 // CameraFraming.swift
-// Optional camera help for pointing the iPhone at the cup before pouring: "Move the phone left",
+// Runs before every pour: a pour can only start once a cup is in view. Optional spoken tips help aim: "Move the phone left",
 // "Move closer", "Cup centred". Vision's built-in image classifier says whether a cup-like object is in
 // view; the objectness saliency request says where the main object sits. When neither is sure, the cue
 // is "no cup", never a guess. The camera doesn't estimate fill.

@@ -22,7 +22,13 @@ final class PourFeedback {
 
     func handle(_ event: PourEvent) {
         switch event {
-        case .listening: say(String(localized: "Listening. Start pouring when you're ready."))
+        // The cup check gates the whole pour, so these two speak even with spoken guidance off.
+        case .listening:
+            // This already says there's no cup yet, so the camera's first "no cup" isn't repeated over it.
+            lastFramingCue = .noCup
+            lastFramingTime = .now
+            say(String(localized: "Looking for your cup. Point the back camera at it."), urgent: true)
+        case .cupFound: say(String(localized: "Cup found. Start pouring when you're ready."), urgent: true)
         case .pouringDetected: say(String(localized: "Pouring."))
         case .pouringPaused: say(String(localized: "Paused."))
         case .milestone(let percent): say(String(localized: "\(percent) percent."))
@@ -52,7 +58,13 @@ final class PourFeedback {
         case .moveCloser: String(localized: "Move closer.")
         case .moveBack: String(localized: "Move back.")
         }
-        say(text)
+        // No cup means the pour can't start, so the user must hear why.
+        say(text, urgent: cue == .noCup)
+    }
+
+    /// The pour can't start without the camera to find the cup.
+    func announceNoCamera() {
+        say(String(localized: "Senso needs the camera to find your cup. Turn on camera access in Settings."), urgent: true)
     }
 
     /// After a calibration pour: say what was learned, since the screen just changed.

@@ -3,8 +3,8 @@
 // rate: the app has no voice of its own. Short earcons (not speech) mark the high-alert band and the stop,
 // with or without VoiceOver.
 //
-// The iPhone never vibrates here, on purpose: vibration travels through the table into the cup and the
-// microphone, and a buzzing phone is easy to mistake for the Watch. Haptics belong to the Watch only.
+// The iPhone vibrates only when the microphone isn't measuring (start, stop, done, errors): vibration
+// travels through the table into the cup and the microphone. While pouring, the Watch's taps carry the level.
 
 import AVFoundation
 import Observation
@@ -74,6 +74,24 @@ final class PourFeedback {
     /// Back on screen after iOS stopped a pour in the background.
     func announceStoppedInBackground() {
         say(String(localized: "Senso stopped listening when it left the screen. Tap Fill up to start again."), urgent: true)
+    }
+
+    // MARK: Haptics
+
+    /// The iPhone haptic for a change of pour state, or nil. One pattern per meaning, Apple's own:
+    ///   listening starts → start · you stopped it → stop · glass full → success
+    ///   microphone interrupted → warning · no microphone → error · back to the start screen → light tap
+    /// Nothing while the pour is being measured (pouring, almost full, paused): the microphone would hear it.
+    nonisolated static func haptic(from old: PourState, to new: PourState) -> SensoryFeedback? {
+        switch (old, new) {
+        case (_, .complete) where old != .complete: .success
+        case (_, .unavailable) where old != .unavailable: .error
+        case (_, .uncertain) where old != .uncertain: .warning
+        case (_, .preparing) where !old.isActive: .start
+        case (.complete, .ready): .impact(weight: .light)
+        case (_, .ready) where old.isActive: .stop
+        default: nil
+        }
     }
 
     // MARK: Speech

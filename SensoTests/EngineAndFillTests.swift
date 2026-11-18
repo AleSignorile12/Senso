@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import Testing
 @testable import Senso
 
@@ -261,6 +262,28 @@ struct PourEngineTests {
         #expect(engine.fillPercent == nil)
         #expect(engine.state == .pouring)
         #expect(!events().contains(.complete))
+    }
+}
+
+// MARK: - Haptics
+
+struct HapticTests {
+    @Test(arguments: [
+        (PourState.ready, PourState.preparing, SensoryFeedback?.some(.start)),
+        (.complete, .preparing, .start),
+        (.pouring, .complete, .success),
+        (.approachingTarget, .ready, .stop),
+        (.complete, .ready, .impact(weight: .light)),
+        (.pouring, .uncertain, .warning),
+        (.preparing, .unavailable, .error),
+        // The microphone is measuring: no vibration.
+        (.preparing, .pouring, nil),
+        (.pouring, .approachingTarget, nil),
+        (.pouring, .preparing, nil),
+        (.uncertain, .preparing, nil),
+    ] as [(PourState, PourState, SensoryFeedback?)])
+    func `the iPhone vibrates only when the microphone isn't measuring`(old: PourState, new: PourState, expected: SensoryFeedback?) {
+        #expect(PourFeedback.haptic(from: old, to: new) == expected)
     }
 }
 

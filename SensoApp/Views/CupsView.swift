@@ -134,6 +134,8 @@ struct CupsView: View {
                     Stepper(value: $store.targetPercent, in: PourThresholds.targetRange, step: 5) {
                         Text("Stop alert at \(store.targetPercent)%")
                     }
+                    // A tick per 5 % step, so the level can be set by feel.
+                    .sensoryFeedback(.selection, trigger: store.targetPercent)
                     Toggle("Spoken guidance", isOn: $store.speechEnabled)
                     Toggle("Start listening when Senso opens", isOn: $store.autoStart)
                     Toggle("Use the camera to find the cup", isOn: $store.cameraHelp)

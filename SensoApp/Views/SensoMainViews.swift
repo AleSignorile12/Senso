@@ -155,6 +155,7 @@ struct SensoRootView: View {
         .preferredColorScheme(state.isActive ? .dark : .light)
         // VoiceOver two-finger double-tap: start, stop, or pour again.
         .accessibilityAction(.magicTap) { state.isActive ? stop() : start() }
+        .sensoryFeedback(trigger: state) { old, new in PourFeedback.haptic(from: old, to: new) }
         .onChange(of: state, initial: true) {
             // Keep the screen, and with it the microphone, on while pouring.
             UIApplication.shared.isIdleTimerDisabled = state.isActive

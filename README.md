@@ -132,7 +132,7 @@ Pure logic on the main actor: no audio, no UI. States: `ready → preparing → 
 
 - **One voice at a time:** VoiceOver announcements when VoiceOver is on, otherwise Senso's own `AVSpeechSynthesizer`, never both.
 - **Earcons** generated in code mark the high-alert band and the stop.
-- **The iPhone never vibrates.** Vibration travels through the table into the cup and the microphone, and a buzzing phone is easy to confuse with the Watch. Haptics belong to the Watch.
+- **The iPhone vibrates only when it isn't listening** (start, stop, glass full, errors). Vibration travels through the table into the cup and the microphone, so while pouring the Watch's taps carry the level.
 
 ### 6. Apple Watch (`SensoWatch Watch App/`, `SensoApp/Watch/PhoneWatchLink.swift`)
 

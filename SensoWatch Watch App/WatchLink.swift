@@ -83,6 +83,7 @@ final class WatchLink: NSObject, WCSessionDelegate {
 // MARK: - Haptics
 
 /// The pour as taps on the wrist, faster as the cup fills, measured from the stop level (90 % by default):
+///   listening starts → "start" · stopped early → "down"
 ///   container locked → one click
 ///   40–21 points below → "up" every 1.2 s, 20–11 below → every 0.6 s, the last 10 → "retry" every 0.3 s
 ///   complete → "stop", then "notification" 0.15 s later
@@ -94,6 +95,9 @@ final class HapticLadder {
 
     func update(from old: PhoneToWatchMessage, to new: PhoneToWatchMessage) {
         let device = WKInterfaceDevice.current()
+        // The iPhone started listening, or the pour was stopped before the glass was full.
+        if new.state.isActive, !old.state.isActive { device.play(.start) }
+        if new.state == .ready, old.state.isActive { device.play(.directionDown) }
         if new.containerLocked, !old.containerLocked, new.state.isActive { device.play(.click) }
 
         if new.state == .complete, old.state != .complete {

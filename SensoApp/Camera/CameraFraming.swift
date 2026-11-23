@@ -84,9 +84,6 @@ nonisolated final class CameraCapture: NSObject, AVCaptureVideoDataOutputSampleB
     static let frameInterval = 1.0 / 3
     /// Colour sampling is cheap, so it runs faster: the background follows the camera without lag.
     static let colorInterval = 1.0 / 10
-    /// Brightest channel allowed in a background colour. 0.34 keeps luminance ≤ 0.095, so white text on
-    /// it has at least 7:1 contrast whatever the camera sees (0.35 would give 6.98:1).
-    static let maxChannel: Float = 0.34
 
     private let session = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "com.senso.camera.session")
@@ -152,7 +149,8 @@ nonisolated final class CameraCapture: NSObject, AVCaptureVideoDataOutputSampleB
         onCue(Self.cue(cupSeen: cupSeen, box: box))
     }
 
-    /// The picture's colours for the background: a 3 × 3 grid of averages, darkened for contrast.
+    /// The picture's colours for the glass on the pouring screen: a 3 × 3 grid of averages. No text sits on
+    /// them, so they keep their real brightness.
     static func sceneColors(in pixels: CVPixelBuffer) -> [SIMD3<Float>]? {
         guard CVPixelBufferGetPixelFormatType(pixels) == kCVPixelFormatType_32BGRA else { return nil }
         CVPixelBufferLockBaseAddress(pixels, .readOnly)
@@ -162,7 +160,6 @@ nonisolated final class CameraCapture: NSObject, AVCaptureVideoDataOutputSampleB
         let height = CVPixelBufferGetHeight(pixels)
         let bgra = UnsafeRawBufferPointer(start: base, count: bytesPerRow * height)
         return portraitGrid(bgra: bgra, width: CVPixelBufferGetWidth(pixels), height: height, bytesPerRow: bytesPerRow)
-            .map(capped)
     }
 
     /// Average colour (RGB, 0…1) of each cell of a 3 × 3 grid over the upright portrait picture, row by
@@ -182,12 +179,6 @@ nonisolated final class CameraCapture: NSObject, AVCaptureVideoDataOutputSampleB
             }
         }
         return zip(sums, counts).map { sum, count in count > 0 ? sum / count : .zero }
-    }
-
-    /// Scales a colour down so its brightest channel is at most `maxChannel`; hue is kept.
-    static func capped(_ color: SIMD3<Float>) -> SIMD3<Float> {
-        let peak = color.max()
-        return peak > maxChannel ? color * (maxChannel / peak) : color
     }
 
     /// `box` in Vision's normalized coordinates (origin bottom-left, upright image).

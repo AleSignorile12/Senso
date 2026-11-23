@@ -489,17 +489,4 @@ struct SceneColorTests {
         #expect([2, 5, 8].allSatisfy { colors[$0] == SIMD3(0, 0, 1) }, "right column blue")
         #expect([0, 1, 3, 4, 6, 7].allSatisfy { colors[$0] == .zero })
     }
-
-    @Test func `bright colours are darkened so white text keeps 7 to 1, keeping their hue`() {
-        let white = CameraCapture.capped(SIMD3(1, 1, 1))
-        #expect(white.max() <= CameraCapture.maxChannel + 1e-6)
-        // WCAG contrast of white text on the brightest allowed background.
-        func linear(_ c: Float) -> Float { c <= 0.04045 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4) }
-        let luminance = 0.2126 * linear(white.x) + 0.7152 * linear(white.y) + 0.0722 * linear(white.z)
-        #expect((1.05 / (luminance + 0.05)) >= 7)
-        let orange = CameraCapture.capped(SIMD3(1, 0.5, 0))
-        #expect(abs(orange.y / orange.x - 0.5) < 1e-6, "same hue")
-        let dark = SIMD3<Float>(0.1, 0.2, 0.3)
-        #expect(CameraCapture.capped(dark) == dark, "dark colours are untouched")
-    }
 }

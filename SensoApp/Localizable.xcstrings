@@ -1,174 +1,438 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "" : {
-      "shouldTranslate" : false
+    "**Tap** to start. We’ll **guide** you." : {
+
     },
-    "%@ %@. " : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ %2$@. "
-          }
-        }
-      }
+    "%lld dB" : {
+
     },
-    "%lld dB" : {},
-    "%lld percent full" : {},
-    "%lld percent." : {},
-    "%lld%%" : {},
-    ". " : {},
-    "A recording with that name and label already exists." : {},
-    "AGAIN" : {},
-    "About %lld percent full" : {},
-    "Acknowledgements" : {},
-    "Add" : {},
-    "Add a cup" : {},
-    "Alert" : {},
-    "Almost full." : {},
-    "An aid, not a guarantee" : {},
-    "Bottom edge facing the cup: that’s where the microphone is." : {},
-    "Calibrate" : {},
-    "Calibrate a cup once: start with it empty, pour until it’s full, then tap Full. Without calibration the level is a rough guess." : {},
-    "Calibrate your cups" : {},
-    "Calibrated" : {},
-    "Calibrated by time only (%lld s)" : {},
-    "Calibrating" : {},
-    "Camera" : {},
-    "Camera can't see a cup." : {},
-    "Camera help to point at the cup" : {},
-    "Can't use the microphone: %@" : {},
-    "Cancel" : {},
-    "Can’t hear the level yet." : {},
-    "Can’t hear the pour" : {},
-    "Changing the sound label moves the clip to that class folder." : {},
-    "Contact support by email" : {},
-    "Container" : {},
-    "Continue" : {},
-    "Couldn't save" : {},
-    "Cup calibrated." : {},
-    "Cup centred." : {},
-    "Cups" : {},
-    "DSP Mode (Uncalibrated)" : {},
-    "Data Collection" : {},
-    "Data collection" : {},
-    "Delete" : {},
-    "Delete recording" : {},
-    "Delete this recording? This can't be undone." : {},
-    "Do it once per cup in Settings for a more accurate level." : {},
-    "Done" : {},
-    "Done!" : {},
-    "Export dataset (.zip)" : {},
-    "FILL" : {},
-    "FSD50K dataset" : {},
-    "Fill level" : {},
-    "Fill up" : {},
-    "Full" : {},
-    "Goes back to the start screen." : {},
-    "HOME" : {},
-    "Help" : {},
-    "How Senso works" : {},
-    "Keep Pouring" : {},
-    "Keep the phone next to the cup." : {},
-    "Labels" : {},
-    "Lay the phone flat next to the cup with the microphone uncovered. Start just before the pour and stop right after it, so the clip has little silence." : {},
-    "Length" : {},
-    "Level from pitch, calibrated cup" : {},
-    "Level from pitch, rough (cup not calibrated)" : {},
-    "Level from pour time, rough" : {},
-    "Liquid" : {},
-    "Listening. Start pouring when you're ready." : {},
-    "Listening…" : {},
-    "Material" : {},
-    "Microphone" : {},
-    "Microphone access is off. Tap Fill up to open Settings." : {},
-    "Microphone access is off. Turn it on in Settings › Senso." : {},
-    "Microphone interrupted. Stop pouring." : {},
-    "Model %@" : {},
-    "Move back." : {},
-    "Move closer." : {},
-    "Move the phone left." : {},
-    "Move the phone right." : {},
-    "Name" : {},
-    "Name, for example Blue mug" : {},
-    "New cup" : {},
-    "Next recording" : {},
-    "No audio arrived from the microphone." : {},
-    "No cup chosen" : {},
-    "No estimate yet" : {},
-    "No fill estimate yet" : {},
-    "No microphone" : {},
-    "No microphone input is available." : {},
-    "No recordings yet." : {},
-    "No speaker" : {},
-    "Not calibrated" : {},
-    "Notes (optional)" : {},
-    "OK" : {},
-    "Opens Senso and starts listening for the pour." : {},
-    "Paused." : {},
-    "Place your iPhone by the cup" : {},
-    "Play" : {},
-    "Pour into the empty cup until it’s full, then tap Full." : {},
-    "Pouring speed" : {},
-    "Pouring." : {},
-    "Pouring: liquid flowing into a cup. Not pouring: other kitchen sounds. Background noise: the room only. Ambiguous: unsure, left out of training by default." : {},
-    "Private by design" : {},
-    "pour?" : {},
-    "Ready to" : {},
-    "Ready to pour?" : {},
-    "Recorded" : {},
-    "Recording" : {},
-    "Recording problem" : {},
-    "Recordings" : {},
-    "Records labelled sound clips for training." : {},
-    "Sample rate" : {},
-    "Save" : {},
-    "Saved the pour time. Senso couldn't hear this cup's pitch, so the level will be rough." : {},
-    "Saves this pour as the cup's full level." : {},
-    "Senso dataset" : {},
-    "Senso stopped listening when it left the screen. Tap Fill up to start again." : {},
-    "Senso tells you how full the cup is and says “Stop!” in time to stop." : {},
-    "Senso will ask to use the microphone. Sound is analysed on your iPhone and never saved." : {},
-    "Senso’s pour detector was trained on sounds from the FSD50K dataset by Fonseca, Favory, Pons, Font and Serra (2022), licensed CC BY 4.0, recorded by the Freesound.org community. Sounds licensed CC BY are credited below." : {},
-    "Settings" : {},
-    "Sound" : {},
-    "Sounds" : {},
-    "Spoken guidance" : {},
-    "Start listening when Senso opens" : {},
-    "Start pouring" : {},
-    "Start pouring when you’re ready." : {},
-    "Start recording" : {},
-    "Starts a new pour." : {},
-    "Starts listening. Put the phone next to your cup." : {},
-    "Stop" : {},
-    "Stop alert at %lld%%" : {},
-    "Stop playback" : {},
-    "Stop recording" : {},
-    "Stop! Glass is full." : {},
-    "Stops listening and goes back to the start." : {},
-    "Take extra care with hot drinks." : {},
-    "Tap Fill up and pour" : {},
-    "**Tap** to start. We’ll **guide** you." : {},
-    "That pour was too short to measure. Try again with an empty cup." : {},
-    "The audio route changed during recording (for example, AirPods connected), so it wasn't saved. Record again." : {},
-    "The microphone isn't available right now." : {},
-    "The microphone isn't available." : {},
-    "The recording was shorter than 1 second, so it wasn't saved." : {},
-    "Tilt the phone down." : {},
-    "Tilt the phone up." : {},
-    "UP!" : {},
-    "Until you hear the **alert**!" : {},
-    "Unzip on your Mac and copy the class folders into MLTraining/Dataset. The clips are also in the Files app under On My iPhone › Senso › Dataset." : {},
-    "Use letters, numbers, - or _ in the name." : {},
-    "Watch" : {},
-    "Welcome to Senso" : {},
-    "You can also say “Start pouring with Senso”, or add Start pouring to Control Center or the Action Button." : {},
-    "Your cups, calibration, stop level and voice." : {},
-    "Your glass is **full**" : {},
-    "off" : {},
-    "on" : {},
-    "weak" : {}
+    "%lld percent full" : {
+
+    },
+    "%lld percent." : {
+
+    },
+    "%lld%%" : {
+
+    },
+    "A recording with that name and label already exists." : {
+
+    },
+    "About %lld percent full" : {
+
+    },
+    "Acknowledgements" : {
+
+    },
+    "Add" : {
+
+    },
+    "Add a cup" : {
+
+    },
+    "AGAIN" : {
+
+    },
+    "Alert" : {
+
+    },
+    "Almost full." : {
+
+    },
+    "An aid, not a guarantee" : {
+
+    },
+    "Bottom edge facing the cup: that’s where the microphone is." : {
+
+    },
+    "Calibrate" : {
+
+    },
+    "Calibrate a cup once: start with it empty, pour until it’s full, then tap Full. Without calibration the level is a rough guess." : {
+
+    },
+    "Calibrate your cups" : {
+
+    },
+    "Calibrated" : {
+
+    },
+    "Calibrated by time only (%lld s)" : {
+
+    },
+    "Calibrating" : {
+
+    },
+    "Camera can't see a cup." : {
+
+    },
+    "Can’t hear the level yet." : {
+
+    },
+    "Can’t hear the pour" : {
+
+    },
+    "Can't use the microphone: %@" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Changing the sound label moves the clip to that class folder." : {
+
+    },
+    "Contact support by email" : {
+
+    },
+    "Container" : {
+
+    },
+    "Continue" : {
+
+    },
+    "Couldn't save" : {
+
+    },
+    "Cup calibrated." : {
+
+    },
+    "Cup centred." : {
+
+    },
+    "Cup found." : {
+
+    },
+    "Cups" : {
+
+    },
+    "Data collection" : {
+
+    },
+    "Data Collection" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Delete recording" : {
+
+    },
+    "Delete this recording? This can't be undone." : {
+
+    },
+    "Do it once per cup in Settings for a more accurate level." : {
+
+    },
+    "Done" : {
+
+    },
+    "Done!" : {
+
+    },
+    "Export dataset (.zip)" : {
+
+    },
+    "FILL" : {
+
+    },
+    "Fill level" : {
+
+    },
+    "Fill up" : {
+
+    },
+    "FSD50K dataset" : {
+
+    },
+    "Full" : {
+
+    },
+    "Help" : {
+
+    },
+    "Home" : {
+
+    },
+    "How Senso works" : {
+
+    },
+    "I can't hear the level. I can't warn you in time." : {
+
+    },
+    "Keep Pouring" : {
+
+    },
+    "Keep the phone next to the cup." : {
+
+    },
+    "Labels" : {
+
+    },
+    "Lay the phone flat next to the cup with the microphone uncovered. Start just before the pour and stop right after it, so the clip has little silence." : {
+
+    },
+    "Length" : {
+
+    },
+    "Liquid" : {
+
+    },
+    "Listening. Start pouring when you're ready." : {
+
+    },
+    "Listening…" : {
+
+    },
+    "Material" : {
+
+    },
+    "Microphone access is off. Tap Fill up to open Settings." : {
+
+    },
+    "Microphone access is off. Turn it on in Settings › Senso." : {
+
+    },
+    "Microphone interrupted. Stop pouring." : {
+
+    },
+    "Move back." : {
+
+    },
+    "Move closer." : {
+
+    },
+    "Move the phone left." : {
+
+    },
+    "Move the phone right." : {
+
+    },
+    "Name" : {
+
+    },
+    "Name, for example Blue mug" : {
+
+    },
+    "New cup" : {
+
+    },
+    "Next recording" : {
+
+    },
+    "No audio arrived from the microphone." : {
+
+    },
+    "No cup chosen" : {
+
+    },
+    "No fill estimate yet" : {
+
+    },
+    "No microphone" : {
+
+    },
+    "No microphone input is available." : {
+
+    },
+    "No recordings yet." : {
+
+    },
+    "No speaker" : {
+
+    },
+    "Not calibrated" : {
+
+    },
+    "Notes (optional)" : {
+
+    },
+    "OK" : {
+
+    },
+    "Opens Senso and starts listening for the pour." : {
+
+    },
+    "Paused" : {
+
+    },
+    "Paused." : {
+
+    },
+    "Place your iPhone by the cup" : {
+
+    },
+    "Play" : {
+
+    },
+    "Pour again when you’re ready." : {
+
+    },
+    "Pour into the empty cup until it’s full, then tap Full." : {
+
+    },
+    "pour?" : {
+
+    },
+    "Pouring speed" : {
+
+    },
+    "Pouring: liquid flowing into a cup. Not pouring: other kitchen sounds. Background noise: the room only. Ambiguous: unsure, left out of training by default." : {
+
+    },
+    "Pouring." : {
+
+    },
+    "Private by design" : {
+
+    },
+    "Ready to" : {
+
+    },
+    "Ready to pour?" : {
+
+    },
+    "Recorded" : {
+
+    },
+    "Recording" : {
+
+    },
+    "Recording problem" : {
+
+    },
+    "Recordings" : {
+
+    },
+    "Records labelled sound clips for training." : {
+
+    },
+    "Sample rate" : {
+
+    },
+    "Save" : {
+
+    },
+    "Saved the pour time. Senso couldn't hear this cup's pitch, so the level will be rough." : {
+
+    },
+    "Saves this pour as the cup's full level." : {
+
+    },
+    "Senso dataset" : {
+
+    },
+    "Senso stopped listening when it left the screen. Tap Fill up to start again." : {
+
+    },
+    "Senso tells you how full the cup is and says “Stop!” in time to stop." : {
+
+    },
+    "Senso will ask to use the microphone. Sound is analysed on your iPhone and never saved." : {
+
+    },
+    "Senso’s pour detector was trained on sounds from the FSD50K dataset by Fonseca, Favory, Pons, Font and Serra (2022), licensed CC BY 4.0, recorded by the Freesound.org community. Sounds licensed CC BY are credited below." : {
+
+    },
+    "Settings" : {
+
+    },
+    "Sound" : {
+
+    },
+    "Sounds" : {
+
+    },
+    "Spoken guidance" : {
+
+    },
+    "Start listening when Senso opens" : {
+
+    },
+    "Start pouring" : {
+
+    },
+    "Start pouring when you’re ready." : {
+
+    },
+    "Start recording" : {
+
+    },
+    "Starts a new pour." : {
+
+    },
+    "Starts listening. Put the phone next to your cup." : {
+
+    },
+    "Stop" : {
+
+    },
+    "Stop alert at %lld%%" : {
+
+    },
+    "Stop playback" : {
+
+    },
+    "Stop recording" : {
+
+    },
+    "Stop! Glass is full." : {
+
+    },
+    "Take extra care with hot drinks." : {
+
+    },
+    "Tap Fill up and pour" : {
+
+    },
+    "That pour was too short to measure. Try again with an empty cup." : {
+
+    },
+    "The audio route changed during recording (for example, AirPods connected), so it wasn't saved. Record again." : {
+
+    },
+    "The microphone isn't available right now." : {
+
+    },
+    "The microphone isn't available." : {
+
+    },
+    "The recording was shorter than 1 second, so it wasn't saved." : {
+
+    },
+    "Tilt the phone down." : {
+
+    },
+    "Tilt the phone up." : {
+
+    },
+    "Until you hear the **alert**!" : {
+
+    },
+    "Unzip on your Mac and copy the class folders into MLTraining/Dataset. The clips are also in the Files app under On My iPhone › Senso › Dataset." : {
+
+    },
+    "UP!" : {
+
+    },
+    "Use letters, numbers, - or _ in the name." : {
+
+    },
+    "Use the camera to find the cup" : {
+
+    },
+    "Welcome to Senso" : {
+
+    },
+    "You can also say “Start pouring with Senso”, or add Start pouring to Control Center or the Action Button." : {
+
+    },
+    "Your cups, calibration, stop level and voice." : {
+
+    },
+    "Your glass is **full**" : {
+
+    }
   },
   "version" : "1.0"
 }

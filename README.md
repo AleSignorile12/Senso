@@ -6,15 +6,16 @@
 
 <p align="center">
   <img src="AppStore/Screenshots/iPhone-en/1-ready.png" width="19%" alt="Ready screen with the Fill Up button">
-  <img src="AppStore/Screenshots/iPhone-en/2-pouring.png" width="19%" alt="Pouring screen at 62 percent">
+  <img src="AppStore/Screenshots/iPhone-en/2-pouring.png" width="19%" alt="Pouring screen at 42 percent">
   <img src="AppStore/Screenshots/iPhone-en/3-alert.png" width="19%" alt="High alert at 86 percent">
   <img src="AppStore/Screenshots/iPhone-en/4-done.png" width="19%" alt="Done screen">
   <img src="AppStore/Screenshots/iPhone-en/6-settings.png" width="19%" alt="Settings screen">
 </p>
 <p align="center">
   <img src="AppStore/Screenshots/Watch/1-fill-up.png" width="15%" alt="Watch ready screen">
-  <img src="AppStore/Screenshots/Watch/2-52-percent.png" width="15%" alt="Watch pouring at 52 percent">
-  <img src="AppStore/Screenshots/Watch/3-100-percent.png" width="15%" alt="Watch done at 100 percent">
+  <img src="AppStore/Screenshots/Watch/2-12-percent.png" width="15%" alt="Watch pouring at 12 percent">
+  <img src="AppStore/Screenshots/Watch/3-52-percent.png" width="15%" alt="Watch pouring at 52 percent">
+  <img src="AppStore/Screenshots/Watch/4-100-percent.png" width="15%" alt="Watch done at 100 percent">
 </p>
 
 - **Platforms:** iOS 18+ and watchOS 11+, plus a Control Center control
@@ -200,7 +201,7 @@ The app's **Data Collection** screen (Debug builds only, the waveform button on 
 
 ## Design
 
-The iPhone's visual spec is the **"FINAL DES. Almost Purple"** design: white screens, a hand-drawn glass that shows the camera's view, and water that rises with the level. Colours live in [`SharedModels/SensoDesign.swift`](SharedModels/SensoDesign.swift), shared by iPhone and Watch; the iPhone screens are in [`SensoApp/Views/SensoMainViews.swift`](SensoApp/Views/SensoMainViews.swift).
+The iPhone's visual spec is the **"FINAL DES. Almost Purple"** design: white screens, a hand-drawn glass that shows the camera's view, and water that rises with the level. The Watch's is **"FINAL WATCH Almost Purple"**: Ready with a full-width Fill up button, water that fills the screen with the percentage, and Done. Colours live in [`SharedModels/SensoDesign.swift`](SharedModels/SensoDesign.swift), shared by iPhone and Watch; the iPhone screens are in [`SensoApp/Views/SensoMainViews.swift`](SensoApp/Views/SensoMainViews.swift), the Watch screens in [`SensoWatch Watch App/WatchMainView.swift`](SensoWatch%20Watch%20App/WatchMainView.swift).
 
 | Token | Value | Used for |
 | --- | --- | --- |
@@ -208,15 +209,15 @@ The iPhone's visual spec is the **"FINAL DES. Almost Purple"** design: white scr
 | Ink | `#006BA1` | Text on white |
 | Rim | `#D7F0FF` | Pale rim around the Fill up button and the glass |
 
-- **Type:** on iPhone, titles use SF Pro Expanded, the system font at `.width(.expanded)` (width 132). The big numbers and AGAIN use SF Pro at its widest, width 150, through a variable-font descriptor. Subtitles are SF Pro medium with bold key words. watchOS ignores that width, so the Watch bundles Archivo at its widest (SIL Open Font License, in `SensoWatch Watch App/Fonts/`). Both follow Dynamic Type.
+- **Type:** on iPhone, titles use SF Pro Expanded, the system font at `.width(.expanded)` (width 132). The big numbers and AGAIN use SF Pro at its widest, width 150, through a variable-font descriptor. Subtitles are SF Pro medium with bold key words. watchOS ignores that width, so the Watch bundles Archivo at its widest (SIL Open Font License, in `SensoWatch Watch App/Fonts/`), each text sized and spaced to cover the same area as in the design. The iPhone follows Dynamic Type; the Watch's text is sized by the design, and already fills the screen.
 - **Screens:** Ready → Pouring (normal / high alert) → Done, on iPhone and Watch.
-- **The liquid:** on iPhone, `GlassWater` is the design's water (a wave, with 30 pt rounded corners) inside `HandDrawnRim`, the hand-drawn glass; `MovingWater` animates it. On the Watch, `LiquidShape` and `MovingLiquid` do the same. The wave drifts one wavelength every 3 s and swells ±15 % over 5 s, so the water keeps moving while the level holds. On iPhone the percentage changes at once, so it stays sharp while the level updates several times a second; the Watch rolls its digits with `.contentTransition(.numericText)`.
+- **The liquid:** on iPhone, `GlassWater` is the design's water (a wave, with 30 pt rounded corners) inside `HandDrawnRim`, the hand-drawn glass; `MovingWater` animates it. The wave drifts one wavelength every 3 s and swells ±15 % over 5 s, so the water keeps moving while the level holds. On the Watch, `WatchWater` is the design's water: a still wave that curves into the left edge, with a pale 8 pt band inside its edge; it rises smoothly with the level. The percentage changes at once on both, so it stays sharp while the level updates several times a second. On the Watch it is white with a 2 pt blue outline, as designed, so it reads on white and on the water.
 - **Transitions:** the root view is a `ZStack` (Ready < Pouring < Done). Every screen is white, so no screen slides over another (it would look cut in half): Pouring rises in and pushes Ready up and out, and Done fades in over Pouring, whose glass sits in the same place. Leaving Pouring or Done is a fade.
 - **Home:** a large labelled **Settings** button (56 pt tall) above the title, read last by VoiceOver.
 - **Onboarding** uses Apple's native welcome-sheet style: system fonts, symbol + title + subtitle rows, a prominent Continue button.
 - **App icon:** a blue wave on pale blue (iPhone and Watch).
 
-Additions to the design: the Settings button, and a Full button that replaces the number during a calibration pour. There is no Stop button, as designed: swipe down, the VoiceOver Stop action, Magic Tap or the Watch stops a pour.
+Additions to the design: the Settings button, and a Full button that replaces the number during a calibration pour. On the Watch, the Ready title says "Open Senso on iPhone" when the iPhone can't be reached, and shows the new stop level for a moment while you turn the Digital Crown. There is no Stop button, as designed: swipe down, the VoiceOver Stop action, Magic Tap or the Watch stops a pour.
 
 ---
 
@@ -309,7 +310,7 @@ The test suite (34 Swift Testing tests) covers audio levels and buffer copies, t
 Debug-only tools:
 
 - **Data Collection:** waveform button on the Ready screen.
-- **Screenshot mode:** launch with `-SensoScreenshot <scene>`. iPhone: `ready`, `pouring`, `alert`, `done`, `onboarding`, `settings`. Watch: `ready`, `pouring`, `done`.
+- **Screenshot mode:** launch with `-SensoScreenshot <scene>`. iPhone: `ready`, `pouring`, `alert`, `done`, `onboarding`, `settings`. Watch: `ready`, `low` (12 %), `pouring` (52 %), `done`.
 
 ---
 

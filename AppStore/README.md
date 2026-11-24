@@ -84,11 +84,13 @@ What's already in the project, and what only you can do (accounts, devices, uplo
      simulator, inside a drawn black iPhone 17 frame. Upload these. `Screenshots/iPhone-PDF/` has the same
      images as single PDFs. To frame new captures, keep them in their own folder and run
      `swift AppStore/Screenshots/frame-iphone.swift <raw folder> AppStore/Screenshots`.
-   - **Apple Watch:** `Screenshots/Watch/`, 3 PNGs at 422 × 514 px, each showing a page of the design file
-     `WATCH.pdf` inside a drawn Watch frame: Ready, pouring, Done. Upload these. `Screenshots/Watch-PDF/` has
-     the same images as single PDFs, but App Store Connect accepts only PNG or JPEG. To make them again, run
-     `swift AppStore/Screenshots/frame-watch.swift <path to WATCH.pdf> AppStore/Screenshots`. They come from
-     the design, while the Watch app itself uses Archivo and `#009EF8`, so compare them before submitting.
+   - **Apple Watch:** `Screenshots/Watch/`, 4 PNGs at 422 × 514 px, each showing a page of the design file
+     `FINAL WATCH Almost Purple.pdf` inside a drawn Watch frame: Ready, pouring at 12% and 52%, Done at 100%.
+     Upload these. `Screenshots/Watch-PDF/` has the same images as single PDFs, but App Store Connect accepts
+     only PNG or JPEG. To make them again, run
+     `swift AppStore/Screenshots/frame-watch.swift "<path to FINAL WATCH Almost Purple.pdf>" AppStore/Screenshots`.
+     They come from the design, which uses SF Pro Expanded. watchOS doesn't have that font, so the Watch app
+     uses Archivo in the same places. Compare them before submitting.
 
    The level numbers are sample values, because a simulator can't hear a pour. To take them again after a
    design change, run a Debug build in a simulator with a launch argument (it opens that screen):
@@ -99,7 +101,7 @@ What's already in the project, and what only you can do (accounts, devices, uplo
    ```
 
    iPhone scenes: `ready`, `pouring`, `alert`, `done`, `onboarding`, `settings`. Watch scenes, with
-   bundle ID `com.alessandrosignorile.Senso.watchkitapp`: `ready`, `pouring`, `done`. The Release (App
+   bundle ID `com.alessandrosignorile.Senso.watchkitapp`: `ready`, `low`, `pouring`, `done`. The Release (App
    Store) build doesn't contain this mode.
 8. **Upload a build.**
    1. In Xcode, choose the Senso scheme and Any iOS Device.

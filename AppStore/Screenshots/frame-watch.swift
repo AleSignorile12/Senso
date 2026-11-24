@@ -3,7 +3,7 @@
 // one-page PDF in Watch-PDF/ and, because App Store Connect accepts only PNG or JPEG, an opaque
 // 422 × 514 PNG in Watch/.
 //
-// Usage: swift frame-watch.swift <WATCH.pdf> <AppStore/Screenshots folder>
+// Usage: swift frame-watch.swift <FINAL WATCH Almost Purple.pdf> <AppStore/Screenshots folder>
 
 import CoreGraphics
 import Foundation
@@ -67,9 +67,9 @@ func draw(_ screen: CGPDFPage, in context: CGContext) {
 }
 
 let arguments = CommandLine.arguments
-guard arguments.count == 3 else { fatalError("usage: frame-watch.swift <WATCH.pdf> <Screenshots folder>") }
+guard arguments.count == 3 else { fatalError("usage: frame-watch.swift <FINAL WATCH Almost Purple.pdf> <Screenshots folder>") }
 let design = CGPDFDocument(URL(fileURLWithPath: arguments[1]) as CFURL)!
-let names = ["1-fill-up", "2-52-percent", "3-100-percent"]
+let names = ["1-fill-up", "2-12-percent", "3-52-percent", "4-100-percent"]
 precondition(design.numberOfPages == names.count, "expected one page per screen")
 let output = URL(fileURLWithPath: arguments[2])
 let pngFolder = output.appending(path: "Watch"), pdfFolder = output.appending(path: "Watch-PDF")

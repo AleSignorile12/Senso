@@ -587,7 +587,7 @@ extension PourGlass where Content == EmptyView {
     }
 }
 
-/// The water in the glass, alive like MovingLiquid: the wave drifts one wavelength every 3 s and gently
+/// The water in the glass, alive: the wave drifts one wavelength every 3 s and gently
 /// swells. Still when Reduce Motion is on, and then exactly as drawn.
 struct MovingWater: View {
     var line: CGFloat

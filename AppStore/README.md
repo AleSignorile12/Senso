@@ -79,8 +79,8 @@ What's already in the project, and what only you can do (accounts, devices, uplo
    | Captions, Audio Descriptions | Not applicable | Senso has no video |
 
 7. **Screenshots** (required): ready to upload in `Screenshots/`.
-   - **iPhone 6.9″:** `Screenshots/iPhone-en/`, 6 PNGs at 1320 × 2868 px: Ready, pouring at 62%, the 86%
-     alert, Done, the welcome sheet and Settings. Each shows the real app, captured in an iPhone 17 Pro Max
+   - **iPhone 6.9″:** `Screenshots/iPhone-en/`, 6 PNGs at 1320 × 2868 px: Ready, pouring at 42%, the 86%
+     alert, Done at 100%, the welcome sheet and Settings. Each shows the real app, captured in an iPhone 17 Pro Max
      simulator, inside a drawn black iPhone 17 frame. Upload these. `Screenshots/iPhone-PDF/` has the same
      images as single PDFs. To frame new captures, keep them in their own folder and run
      `swift AppStore/Screenshots/frame-iphone.swift <raw folder> AppStore/Screenshots`.

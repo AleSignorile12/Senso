@@ -24,15 +24,12 @@ enum ScreenshotScene: String {
             ReadyView(onStart: {}, cupName: "Blue mug", onOpenCups: {})
         case .listening:
             PouringView(state: .preparing, fillPercent: nil, onStop: {})
-                .preferredColorScheme(.dark)
         case .pouring:
-            PouringView(state: .pouring, fillPercent: 62, onStop: {})
-                .preferredColorScheme(.dark)
+            PouringView(state: .pouring, fillPercent: 42, onStop: {})
         case .alert:
             PouringView(state: .approachingTarget, fillPercent: 86, onStop: {})
-                .preferredColorScheme(.dark)
         case .done:
-            CompleteView(targetPercent: 90, onAgain: {}, onHome: {})
+            CompleteView(targetPercent: 100, onAgain: {}, onHome: {})
         case .settings:
             CupsView(store: Self.sampleCups(), onCalibrate: { _ in })
         }

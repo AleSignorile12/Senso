@@ -149,7 +149,7 @@ Pure logic on the main actor: no audio, no UI. States: `ready → preparing → 
 
 ### 8. Camera help (`SensoApp/Camera/CameraFraming.swift`)
 
-Opt-in. Vision's built-in image classifier (`VNClassifyImageRequest`) checks for a cup-like object, and objectness saliency finds where it is. The result becomes a spoken framing cue before the pour, and a confirmed cup lets a slightly weaker pour sound start it (0.65 instead of 0.7). When neither is sure, the cue is "no cup", never a guess. The camera never estimates fill. While it runs, it also samples the picture's colours into a 3×3 grid for the pouring screen's background, capped so white text keeps at least 7:1 contrast.
+Opt-in. Vision's built-in image classifier (`VNClassifyImageRequest`) checks for a cup-like object, and objectness saliency finds where it is. The result becomes a spoken framing cue before the pour, and a confirmed cup lets a slightly weaker pour sound start it (0.65 instead of 0.7). When neither is sure, the cue is "no cup", never a guess. The camera never estimates fill. While it runs, it also samples the picture's colours into a 3×3 grid for the glass on the pouring screen. No text sits on them, so they keep their real brightness; with the camera off, a blurred photo from the design stands in.
 
 ---
 
@@ -200,22 +200,23 @@ The app's **Data Collection** screen (Debug builds only, the waveform button on 
 
 ## Design
 
-The visual spec is the blue **"water"** design. Tokens and the liquid shape live in [`SharedModels/SensoDesign.swift`](SharedModels/SensoDesign.swift) and are shared by iPhone and Watch.
+The iPhone's visual spec is the **"FINAL DES. Almost Purple"** design: white screens, a hand-drawn glass that shows the camera's view, and water that rises with the level. Colours live in [`SharedModels/SensoDesign.swift`](SharedModels/SensoDesign.swift), shared by iPhone and Watch; the iPhone screens are in [`SensoApp/Views/SensoMainViews.swift`](SensoApp/Views/SensoMainViews.swift).
 
 | Token | Value | Used for |
 | --- | --- | --- |
-| Water | `#009EF8` | Brand blue: buttons, liquid, titles (`#1A66D1` with Increase Contrast on iPhone) |
-| Sky Mist | `#D9F1FD` | Empty part of the glass on the Done screen |
+| Water | `#009EF8` | Brand blue: Fill up button, water, the glass's blue rim (`#1A66D1` with Increase Contrast on iPhone) |
+| Ink | `#006BA1` | Text on white |
+| Rim | `#D7F0FF` | Pale rim around the Fill up button and the glass |
 
-- **Type:** on iPhone, SF Pro Expanded, which is the system font at `.width(.expanded)`. watchOS ignores that width, so the Watch bundles Archivo at its widest (SIL Open Font License, in `SensoWatch Watch App/Fonts/`). Both follow Dynamic Type.
+- **Type:** on iPhone, titles use SF Pro Expanded, the system font at `.width(.expanded)` (width 132). The big numbers and AGAIN use SF Pro at its widest, width 150, through a variable-font descriptor. Subtitles are SF Pro medium with bold key words. watchOS ignores that width, so the Watch bundles Archivo at its widest (SIL Open Font License, in `SensoWatch Watch App/Fonts/`). Both follow Dynamic Type.
 - **Screens:** Ready → Pouring (normal / high alert) → Done, on iPhone and Watch.
-- **The liquid:** `LiquidShape` is a sine-wave surface. `MovingLiquid` animates it with a `TimelineView`: it drifts one wavelength every 3 s and swells ±15 % over 5 s, so the liquid keeps moving while the level holds. Percentages change with `.contentTransition(.numericText)`.
-- **Transitions:** the root view is a `ZStack` (Ready < Pouring < Done). Pouring slides in from the bottom and fades out; Done slides in and out from the bottom.
-- **Home:** a large labelled **Settings** button (at least 64 pt) in the corner, read last by VoiceOver.
+- **The liquid:** on iPhone, `GlassWater` is the design's water (a wave, with 30 pt rounded corners) inside `HandDrawnRim`, the hand-drawn glass; `MovingWater` animates it. On the Watch, `LiquidShape` and `MovingLiquid` do the same. The wave drifts one wavelength every 3 s and swells ±15 % over 5 s, so the water keeps moving while the level holds. On iPhone the percentage changes at once, so it stays sharp while the level updates several times a second; the Watch rolls its digits with `.contentTransition(.numericText)`.
+- **Transitions:** the root view is a `ZStack` (Ready < Pouring < Done). Every screen is white, so no screen slides over another (it would look cut in half): Pouring rises in and pushes Ready up and out, and Done fades in over Pouring, whose glass sits in the same place. Leaving Pouring or Done is a fade.
+- **Home:** a large labelled **Settings** button (56 pt tall) above the title, read last by VoiceOver.
 - **Onboarding** uses Apple's native welcome-sheet style: system fonts, symbol + title + subtitle rows, a prominent Continue button.
 - **App icon:** a blue wave on pale blue (iPhone and Watch).
 
-Deliberate departures from the design, all for accessibility: a visible Stop button and a darker stand-in for the blurred camera background (to keep 7:1 contrast).
+Additions to the design: the Settings button, and a Full button that replaces the number during a calibration pour. There is no Stop button, as designed: swipe down, the VoiceOver Stop action, Magic Tap or the Watch stops a pour.
 
 ---
 
@@ -224,7 +225,7 @@ Deliberate departures from the design, all for accessibility: a visible Stop but
 Accessibility is the product, not an add-on.
 
 - **VoiceOver first.** Every control has a label, states are spoken, and progress goes through VoiceOver announcements when it's on.
-- **Contrast:** white on the brand blue is 2.9:1, below WCAG AA's 4.5:1. With Increase Contrast on, the iPhone deepens the blue to reach 5.4:1. The camera-tinted background is capped so white text keeps at least 7:1 (`SceneColorTests`).
+- **Contrast:** white on the brand blue is 2.9:1, below WCAG AA's 4.5:1. With Increase Contrast on, the iPhone deepens the blue to reach 5.4:1. Text is `#006BA1` on white, 5.8:1.
 - **Dynamic Type** on every text style, including the expanded brand font.
 - **Reduce Motion:** the liquid stays still and screens only fade.
 - **Never colour alone:** every state is also spelled out in words.

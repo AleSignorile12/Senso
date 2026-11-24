@@ -23,8 +23,8 @@ MICROPHONE: used only while a pour is running, analysed on the device in real ti
 
 CAMERA: optional and off by default (Settings › Use the camera to find the cup). It looks for the cup, so a
 pour is recognised a little sooner, and gives spoken tips for pointing the iPhone at it before pouring. Senso
-works fully without it. During the pour, the background takes its colours from the camera image, like a
-heavily blurred preview. Images are analysed on the device and never saved.
+works fully without it. During the pour, the glass drawn on screen takes its colours from the camera image, like
+a heavily blurred preview. Images are analysed on the device and never saved.
 
 APPLE WATCH: the Watch app mirrors the pour and taps the wrist faster as the cup fills, so the user can
 follow the pour without looking or listening. While a pour is running (usually under a minute), it holds a

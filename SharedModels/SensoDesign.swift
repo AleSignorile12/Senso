@@ -22,8 +22,10 @@ nonisolated enum SensoColor {
     #else
     static let water = Color(red: 0x00 / 255, green: 0x9E / 255, blue: 0xF8 / 255)
     #endif
-    /// The empty part of the glass at the top of the Done screen (#D9F1FD).
-    static let skyMist = Color(red: 0xD9 / 255, green: 0xF1 / 255, blue: 0xFD / 255)
+    /// Text on white (#006BA1, from the design): 5.8:1 contrast.
+    static let ink = Color(red: 0x00 / 255, green: 0x6B / 255, blue: 0xA1 / 255)
+    /// The pale rim around the Fill up button and the glass (#D7F0FF, from the design).
+    static let rim = Color(red: 0xD7 / 255, green: 0xF0 / 255, blue: 0xFF / 255)
 }
 
 extension Font {

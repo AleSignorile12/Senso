@@ -511,7 +511,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "SensoWatch-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = Senso;
+				INFOPLIST_KEY_CFBundleDisplayName = Sensow;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.alessandrosignorile.Senso;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -536,7 +536,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "SensoWatch-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = Senso;
+				INFOPLIST_KEY_CFBundleDisplayName = Sensow;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.alessandrosignorile.Senso;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -595,7 +595,7 @@
 				DEVELOPMENT_TEAM = V3VQ48386G;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "SensoControls-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = Senso;
+				INFOPLIST_KEY_CFBundleDisplayName = Sensow;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -618,7 +618,7 @@
 				DEVELOPMENT_TEAM = V3VQ48386G;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "SensoControls-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = Senso;
+				INFOPLIST_KEY_CFBundleDisplayName = Sensow;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

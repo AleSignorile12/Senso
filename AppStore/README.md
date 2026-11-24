@@ -9,8 +9,8 @@ What's already in the project, and what only you can do (accounts, devices, uplo
   See `MLTraining/External/ATTRIBUTION.md`.
 - **Credits:** CC BY requires naming every creator. The app lists them under
   Settings › Help › Acknowledgements, from `SensoApp/ML/TrainingDataCredits.txt`.
-- **Watch font:** Archivo, because watchOS has no wide system font. It's free under the SIL Open Font
-  License, and the licence ships with it in `SensoWatch Watch App/Fonts/`.
+- **Font:** Atkinson Hyperlegible Next on iPhone and Watch, chosen for low-vision and dyslexic readers. It's
+  free under the SIL Open Font License, and the licence ships with it in `SharedModels/Fonts/`.
 - **App icon:** iPhone and Watch, 1024 px, opaque (`Assets.xcassets/AppIcon`). It's a simple blue wave
   on pale blue from the water design's colours. Replace the PNG if you have a designed one.
 - **Version:** 1.0, build 1. Raise `CURRENT_PROJECT_VERSION` (the project's build number) for every upload.
@@ -89,8 +89,8 @@ What's already in the project, and what only you can do (accounts, devices, uplo
      Upload these. `Screenshots/Watch-PDF/` has the same images as single PDFs, but App Store Connect accepts
      only PNG or JPEG. To make them again, run
      `swift AppStore/Screenshots/frame-watch.swift "<path to FINAL WATCH Almost Purple.pdf>" AppStore/Screenshots`.
-     They come from the design, which uses SF Pro Expanded. watchOS doesn't have that font, so the Watch app
-     uses Archivo in the same places. Compare them before submitting.
+     They come from the design, which uses SF Pro Expanded. The app now uses Atkinson Hyperlegible Next, so
+     take new screenshots from the app before submitting.
 
    The level numbers are sample values, because a simulator can't hear a pour. To take them again after a
    design change, run a Debug build in a simulator with a launch argument (it opens that screen):

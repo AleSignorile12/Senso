@@ -8,5 +8,10 @@
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
+	<!-- Atkinson Hyperlegible Next, the app's typeface (SharedModels/Fonts). -->
+	<key>UIAppFonts</key>
+	<array>
+		<string>AtkinsonHyperlegibleNext.ttf</string>
+	</array>
 </dict>
 </plist>

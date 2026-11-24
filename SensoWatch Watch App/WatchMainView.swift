@@ -4,8 +4,8 @@
 // target with the Digital Crown.
 //
 // Numbers are the design's points on the 46 mm Watch (208 × 248 pt), scaled to the screen: across by its
-// width, down by its height. The design's SF Pro Expanded isn't available on watchOS, so the text is Archivo,
-// sized and spaced to cover the same area as the design's text.
+// width, down by its height. Text is Atkinson Hyperlegible Next, the app's typeface, for low-vision and
+// dyslexic readers (see SensoDesign.swift).
 
 import SwiftUI
 import CoreText
@@ -69,8 +69,8 @@ struct WatchReadyView: View {
             let x = proxy.size.width / 208, y = proxy.size.height / 248
             ZStack(alignment: .top) {
                 title
+                    // Normal letter spacing: squeezed letters are harder for dyslexic readers.
                     .font(.senso(21.35 * x))
-                    .tracking(-2.16 * x)
                     .foregroundStyle(SensoColor.ink)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
@@ -162,8 +162,8 @@ struct WatchCompleteView: View {
                     // The design draws this water 1 pt past the left edge.
                     Water(shape: WatchWater(surface: 21.99 * y, amplitude: 2.99, corner: .done, scale: x))
                         .padding(.leading, -x)
-                    Text("Tap to").font(.senso(20.37 * x)).tracking(-0.3 * x).baseline(93 * y)
-                    Text("pour again").font(.senso(20.37 * x)).tracking(-0.3 * x).baseline(117 * y)
+                    Text("Tap to").font(.senso(20.37 * x)).baseline(93 * y)
+                    Text("pour again").font(.senso(20.37 * x)).baseline(117 * y)
                     OutlinedPercent(text: fillText(targetPercent), size: 47 * x)
                         .baseline(187 * y)
                 }
@@ -274,7 +274,7 @@ private struct OutlinedPercent: View {
     let size: CGFloat
 
     var body: some View {
-        let glyphs = GlyphText(text, font: archivo(size, .black), tracking: size * 0.3 / 47)
+        let glyphs = GlyphText(text, font: atkinson(size, .black), tracking: size * 0.3 / 47)
         ZStack {
             glyphs.stroke(SensoColor.water, style: StrokeStyle(lineWidth: size * 4 / 47, miterLimit: 5))
             glyphs.fill(.white)

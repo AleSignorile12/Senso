@@ -98,7 +98,7 @@ struct CupsView: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(cup.name)
                                     Text(calibrationText(cup.calibration))
-                                        .font(.footnote)
+                                        .font(.senso(.footnote))
                                         .foregroundStyle(.secondary)
                                 }
                             }

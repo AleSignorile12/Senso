@@ -1,15 +1,14 @@
 // SensoDesign.swift
 // Colours and type from the blue "water" design, shared by iPhone and Watch.
-// The iPhone's typeface is SF Pro Expanded, the system font at `.expanded` width. watchOS has no expanded
-// system font, so the Watch bundles Archivo at its widest (SIL Open Font License, see Archivo-OFL.txt).
+// The typeface is Atkinson Hyperlegible Next (Braille Institute, SIL Open Font License, see
+// SharedModels/Fonts): its letters are drawn to be told apart (I l 1, O 0, b d p q), which helps low-vision
+// and dyslexic readers. Bundled and registered in both apps' Info.plist (UIAppFonts).
 //
 // WCAG contrast: white on #009EF8 is 2.9:1, below Apple's 4.5:1, so with Increase Contrast on (iPhone)
 // the blue deepens to #1A66D1, 5.4:1.
 
-import SwiftUI
-#if os(watchOS)
 import CoreText
-#endif
+import SwiftUI
 
 nonisolated enum SensoColor {
     /// Brand blue: buttons, liquid, titles (#009EF8, from the design).
@@ -29,34 +28,59 @@ nonisolated enum SensoColor {
 }
 
 extension Font {
-    /// The design's wide typeface. Pass a size from `@ScaledMetric` so it follows Dynamic Type.
+    /// Atkinson Hyperlegible Next at a size already scaled for Dynamic Type (pass an `@ScaledMetric`).
     static func senso(_ size: CGFloat, _ weight: Font.Weight = .bold) -> Font {
-        #if os(watchOS)
-        return Font(archivo(size, weight))
-        #else
-        return .system(size: size, weight: weight).width(.expanded)
-        #endif
+        .custom(atkinsonName(weight), fixedSize: size)
     }
+
+    /// Atkinson Hyperlegible Next that grows with Dynamic Type like the system text style.
+    static func senso(_ style: Font.TextStyle, _ weight: Font.Weight = .regular) -> Font {
+        .custom(atkinsonName(weight), size: style.baseSize, relativeTo: style)
+    }
+
 }
 
-#if os(watchOS)
-/// Archivo at its widest. SF Pro's weights (bold 760, heavy 870, black 1000) map onto Archivo's axis, which
-/// tops out at 900: bold 700, heavy 790, black 900.
-nonisolated func archivo(_ size: CGFloat, _ weight: Font.Weight) -> CTFont {
-    let wght: CGFloat = switch weight {
-    case .regular: 400
-    case .semibold: 600
-    case .heavy: 790
-    case .black: 900
-    default: 700
+/// The font's named weights (200–800); black, heavier than the font goes, falls back to ExtraBold.
+nonisolated func atkinsonName(_ weight: Font.Weight) -> String {
+    let suffix = switch weight {
+    case .ultraLight, .thin: "_ExtraLight"
+    case .light: "_Light"
+    case .medium: "_Medium"
+    case .semibold: "_SemiBold"
+    case .bold: "_Bold"
+    case .heavy, .black: "_ExtraBold"
+    default: ""
     }
-    // Archivo's variation axes, as four-character tags: "wght" (weight) and "wdth" (125 is its widest).
-    var font = CTFontDescriptorCreateWithNameAndSize("Archivo-SemiBold" as CFString, size)
-    font = CTFontDescriptorCreateCopyWithVariation(font, 0x7767_6874 as CFNumber, wght)
-    font = CTFontDescriptorCreateCopyWithVariation(font, 0x7764_7468 as CFNumber, 125)
-    return CTFontCreateWithFontDescriptor(font, size, nil)
+    return "AtkinsonHyperlegibleNext-Regular" + suffix
 }
-#endif
+
+/// The same font for Core Text, where glyph outlines are drawn by hand (the Watch's outlined number).
+nonisolated func atkinson(_ size: CGFloat, _ weight: Font.Weight) -> CTFont {
+    CTFontCreateWithName(atkinsonName(weight) as CFString, size, nil)
+}
+
+/// Atkinson's line height as a share of the font size (ascender 0.984 + descender 0.316). Designs give
+/// baselines; SwiftUI lays out line boxes, so spacings between Texts are worked out with this.
+let sensoLineHeight: CGFloat = 1.3
+
+private extension Font.TextStyle {
+    /// The default-size point sizes of Apple's text styles.
+    var baseSize: CGFloat {
+        switch self {
+        case .largeTitle: 34
+        case .title: 28
+        case .title2: 22
+        case .title3: 20
+        case .headline, .body: 17
+        case .callout: 16
+        case .subheadline: 15
+        case .footnote: 13
+        case .caption: 12
+        case .caption2: 11
+        default: 17
+        }
+    }
+}
 
 /// Text for a fill estimate. No estimate shows a dash, never a made-up number.
 nonisolated func fillText(_ percent: Int?) -> String {

@@ -17,7 +17,7 @@ struct AcknowledgementsView: View {
             }
             Section("Sounds") {
                 ForEach(Array(credits.enumerated()), id: \.offset) { _, line in
-                    Text(verbatim: line).font(.footnote)
+                    Text(verbatim: line).font(.senso(.footnote))
                 }
             }
         }

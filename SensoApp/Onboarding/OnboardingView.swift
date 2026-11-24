@@ -15,7 +15,7 @@ struct OnboardingView: View {
         ScrollView {
             VStack(spacing: 36) {
                 Text("Welcome to Senso")
-                    .font(.largeTitle.bold())
+                    .font(.senso(.largeTitle, .bold))
                     .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
                     .accessibilityFocused($titleFocused)
@@ -40,7 +40,7 @@ struct OnboardingView: View {
         .safeAreaInset(edge: .bottom) {
             Button { dismiss() } label: {
                 Text("Continue")
-                    .font(.headline)
+                    .font(.senso(.headline, .bold))
                     .frame(maxWidth: .infinity, minHeight: 36)
             }
             .buttonStyle(.borderedProminent)
@@ -50,6 +50,7 @@ struct OnboardingView: View {
             .background(Color(.systemBackground))
         }
         .tint(SensoColor.water)
+        .font(.senso(.body))
         .background(Color(.systemBackground))
         .accessibilityAction(.escape) { dismiss() }
         .onAppear { titleFocused = true }
@@ -63,9 +64,9 @@ struct OnboardingView: View {
                 .frame(width: iconColumn)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.headline)
+                Text(title).font(.senso(.headline, .bold))
                 Text(detail)
-                    .font(.subheadline)
+                    .font(.senso(.subheadline))
                     // Darker than .secondary (about 4.5:1) to keep Senso's 7:1 contrast target.
                     .foregroundStyle(.primary.opacity(0.75))
                     .fixedSize(horizontal: false, vertical: true)

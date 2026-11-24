@@ -118,6 +118,7 @@ struct SensoRootView: View {
         }
         .sheet(isPresented: $showingCups) {
             CupsView(store: cups) { cup in start(calibrating: cup) }
+                .font(.senso(.body))
         }
         .onAppear {
             engine.onEvent = { [feedback] event in feedback.handle(event) }
@@ -326,7 +327,7 @@ struct ReadyView: View {
             .frame(minHeight: 62)
 
             // Two Texts, as SwiftUI ignores negative line spacing: the design sets the lines 60 pt apart.
-            VStack(alignment: .leading, spacing: titleSize * (60 / 63 - sfLineHeight)) {
+            VStack(alignment: .leading, spacing: titleSize * (60 / 63 - sensoLineHeight)) {
                 Text("Ready to")
                 Text("pour?")
             }
@@ -383,30 +384,16 @@ struct ReadyView: View {
     private var fillSize: CGFloat { min(fillLabelSize, 110) }
 }
 
-/// SF Pro's line height as a share of the font size (ascender 0.952 + descender 0.241). The design gives
-/// baselines; SwiftUI lays out line boxes, so spacings between Texts are worked out with this.
-private let sfLineHeight: CGFloat = 1.1934
-
-/// The design's subtitles: SF Pro medium, with the words marked **like this** in bold, and 0.5% tracking.
+/// The design's subtitles: medium weight, with the words marked **like this** in bold, and 0.5% tracking.
 /// Fonts are set run by run because SwiftUI's own Markdown bold is lost once a font sets its weight.
 private func designSubtitle(_ text: AttributedString, size: CGFloat) -> some View {
     var text = text
     for run in text.runs {
         let bold = run.inlinePresentationIntent?.contains(.stronglyEmphasized) == true
-        text[run.range].font = .system(size: size, weight: bold ? .bold : .medium)
+        text[run.range].font = .senso(size, bold ? .bold : .medium)
         text[run.range].inlinePresentationIntent = nil
     }
     return Text(text).tracking(size * 0.005)
-}
-
-/// SF Pro at its widest (width 150), which the design uses for the numbers and AGAIN; `.expanded` is 132.
-private func widestFont(_ size: CGFloat, weight: CGFloat) -> Font {
-    // Variation axes as four-character tags: "wdth", "wght", and "opsz" (optical size, as the system sets it).
-    let axes: [NSNumber: NSNumber] = [0x7764_7468: 150, 0x7767_6874: NSNumber(value: Double(weight)),
-                                      0x6F70_737A: NSNumber(value: Double(min(max(size, 17), 96)))]
-    let descriptor = UIFont.systemFont(ofSize: size).fontDescriptor
-        .addingAttributes([UIFontDescriptor.AttributeName(rawValue: kCTFontVariationAttribute as String): axes])
-    return Font(UIFont(descriptor: descriptor, size: size))
 }
 
 // MARK: - Pouring
@@ -458,7 +445,7 @@ struct PouringView: View {
                 .accessibilityHint("Saves this pour as the cup's full level.")
             } else {
                 Text(fillText(shownPercent))
-                    .font(widestFont(percentSize, weight: 1000))
+                    .font(.senso(percentSize, .heavy))
                     .lineLimit(1)
                     .minimumScaleFactor(0.3)
                     // Changes at once, without rolling digits: the level updates several times a second, so a
@@ -724,14 +711,14 @@ struct CompleteView: View {
                 .onAppear { titleFocused = true }
         } glass: {
             Button(action: onAgain) {
-                // The glass is full, and the whole glass is the AGAIN button.
-                PourGlass(waterLine: GlassWater.fullLine, waveHeight: 7.49) {
+                // The glass is filled to the brim, all blue, and the whole glass is the AGAIN button.
+                PourGlass(waterLine: 1, waveHeight: 0) {
                     VStack(spacing: againSize * -0.0163) {
                         Text(Image(systemName: "arrow.counterclockwise"))
                             .font(.system(size: againSize * 80 / 67, weight: .semibold))
                             .accessibilityHidden(true)
                         Text("AGAIN")
-                            .font(widestFont(againSize, weight: 870))
+                            .font(.senso(againSize, .heavy))
                             .tracking(againSize * 0.0137)
                     }
                     .foregroundStyle(.white)
@@ -747,7 +734,7 @@ struct CompleteView: View {
             .accessibilityAction(named: "Home", onHome)
         } bottom: {
             Text("\(targetPercent)%")
-                .font(widestFont(percentSize, weight: 1000))
+                .font(.senso(percentSize, .heavy))
                 .lineLimit(1)
                 .minimumScaleFactor(0.3)
                 .accessibilityLabel("\(targetPercent) percent full")

@@ -449,7 +449,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Senso-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = Brim;
+				INFOPLIST_KEY_CFBundleDisplayName = Sensow;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCameraUsageDescription = "If you turn on the camera in Settings, Senso looks for your cup to recognise the pour sooner, helps you point your iPhone at it, and tints the pouring screen with the colours it sees. Images are analysed on this iPhone and never saved.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Senso listens to the sound of liquid pouring so it can tell you when your cup is nearly full. Audio is analysed on this iPhone.";
@@ -481,7 +481,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Senso-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = Brim;
+				INFOPLIST_KEY_CFBundleDisplayName = Sensow;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSCameraUsageDescription = "If you turn on the camera in Settings, Senso looks for your cup to recognise the pour sooner, helps you point your iPhone at it, and tints the pouring screen with the colours it sees. Images are analysed on this iPhone and never saved.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Senso listens to the sound of liquid pouring so it can tell you when your cup is nearly full. Audio is analysed on this iPhone.";

@@ -215,7 +215,7 @@ The iPhone's visual spec is the **"FINAL DES. Almost Purple"** design: white scr
 - **Transitions:** the root view is a `ZStack` (Ready < Pouring < Done). Every screen is white, so no screen slides over another (it would look cut in half): Pouring rises in and pushes Ready up and out, and Done fades in over Pouring, whose glass sits in the same place. Leaving Pouring or Done is a fade.
 - **Home:** a large labelled **Settings** button (56 pt tall) above the title, read last by VoiceOver.
 - **Onboarding** uses Apple's native welcome-sheet style: system fonts, symbol + title + subtitle rows, a prominent Continue button.
-- **App icon:** a blue wave on pale blue (iPhone and Watch).
+- **App icon:** a glass of water with sound rings on blue, with a dark-mode version on iPhone (iPhone and Watch).
 
 Additions to the design: the Settings button, and a Full button that replaces the number during a calibration pour. On the Watch, the Ready title says "Open Sensow on iPhone" when the iPhone can't be reached, and shows the new stop level for a moment while you turn the Digital Crown. There is no Stop button, as designed: swipe down, the VoiceOver Stop action, Magic Tap or the Watch stops a pour.
 

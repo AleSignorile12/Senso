@@ -11,8 +11,9 @@ What's already in the project, and what only you can do (accounts, devices, uplo
   Settings › Help › Acknowledgements, from `SensoApp/ML/TrainingDataCredits.txt`.
 - **Watch font:** Archivo, because watchOS has no wide system font. It's free under the SIL Open Font
   License, and the licence ships with it in `SensoWatch Watch App/Fonts/`.
-- **App icon:** iPhone and Watch, 1024 px, opaque (`Assets.xcassets/AppIcon`). It's a simple blue wave
-  on pale blue from the water design's colours. Replace the PNG if you have a designed one.
+- **App icon:** iPhone and Watch, 1024 px, opaque (`Assets.xcassets/AppIcon`): a glass of water with sound
+  rings on blue. The iPhone also has a dark-mode version. Each file name must match `Contents.json` exactly,
+  including capital letters, or Xcode leaves that icon out.
 - **Version:** 1.0, build 1. Raise `CURRENT_PROJECT_VERSION` (the project's build number) for every upload.
 - **Export compliance:** `ITSAppUsesNonExemptEncryption = NO`, because Sensow uses no encryption of its own.
   App Store Connect won't ask about it on each upload.

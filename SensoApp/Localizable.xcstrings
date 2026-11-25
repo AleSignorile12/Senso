@@ -154,7 +154,7 @@
     "Home" : {
 
     },
-    "How Senso works" : {
+    "How Sensow works" : {
 
     },
     "I can't hear the level. I can't warn you in time." : {
@@ -190,7 +190,7 @@
     "Microphone access is off. Tap Fill up to open Settings." : {
 
     },
-    "Microphone access is off. Turn it on in Settings › Senso." : {
+    "Microphone access is off. Turn it on in Settings › Sensow." : {
 
     },
     "Microphone interrupted. Stop pouring." : {
@@ -250,7 +250,7 @@
     "OK" : {
 
     },
-    "Opens Senso and starts listening for the pour." : {
+    "Opens Sensow and starts listening for the pour." : {
 
     },
     "Paused" : {
@@ -313,25 +313,25 @@
     "Save" : {
 
     },
-    "Saved the pour time. Senso couldn't hear this cup's pitch, so the level will be rough." : {
+    "Saved the pour time. Sensow couldn't hear this cup's pitch, so the level will be rough." : {
 
     },
     "Saves this pour as the cup's full level." : {
 
     },
-    "Senso dataset" : {
+    "Sensow dataset" : {
 
     },
-    "Senso stopped listening when it left the screen. Tap Fill up to start again." : {
+    "Sensow stopped listening when it left the screen. Tap Fill up to start again." : {
 
     },
-    "Senso tells you how full the cup is and says “Stop!” in time to stop." : {
+    "Sensow tells you how full the cup is and says “Stop!” in time to stop." : {
 
     },
-    "Senso will ask to use the microphone. Sound is analysed on your iPhone and never saved." : {
+    "Sensow will ask to use the microphone. Sound is analysed on your iPhone and never saved." : {
 
     },
-    "Senso’s pour detector was trained on sounds from the FSD50K dataset by Fonseca, Favory, Pons, Font and Serra (2022), licensed CC BY 4.0, recorded by the Freesound.org community. Sounds licensed CC BY are credited below." : {
+    "Sensow’s pour detector was trained on sounds from the FSD50K dataset by Fonseca, Favory, Pons, Font and Serra (2022), licensed CC BY 4.0, recorded by the Freesound.org community. Sounds licensed CC BY are credited below." : {
 
     },
     "Settings" : {
@@ -346,7 +346,7 @@
     "Spoken guidance" : {
 
     },
-    "Start listening when Senso opens" : {
+    "Start listening when Sensow opens" : {
 
     },
     "Start pouring" : {
@@ -409,7 +409,7 @@
     "Until you hear the **alert**!" : {
 
     },
-    "Unzip on your Mac and copy the class folders into MLTraining/Dataset. The clips are also in the Files app under On My iPhone › Senso › Dataset." : {
+    "Unzip on your Mac and copy the class folders into MLTraining/Dataset. The clips are also in the Files app under On My iPhone › Sensow › Dataset." : {
 
     },
     "UP!" : {
@@ -421,10 +421,10 @@
     "Use the camera to find the cup" : {
 
     },
-    "Welcome to Senso" : {
+    "Welcome to Sensow" : {
 
     },
-    "You can also say “Start pouring with Senso”, or add Start pouring to Control Center or the Action Button." : {
+    "You can also say “Start pouring with Sensow”, or add Start pouring to Control Center or the Action Button." : {
 
     },
     "Your cups, calibration, stop level and voice." : {

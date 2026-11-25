@@ -59,7 +59,7 @@ struct WatchReadyView: View {
 
     // Not in the design: the title also tells you when the iPhone isn't reachable, or the new stop target.
     private var title: Text {
-        if !phoneReachable { Text("Open Senso on iPhone") }
+        if !phoneReachable { Text("Open Sensow on iPhone") }
         else if showsTarget { Text("Stop at \(targetPercent)%") }
         else { Text("Ready to pour?") }
     }

@@ -21,7 +21,7 @@ What's already in the project, and what only you can do (accounts, devices, uplo
 - **Data Collection:** only in Debug builds run from Xcode. The App Store and TestFlight builds don't show it.
 - **Onboarding:** a welcome sheet on first launch, in Apple's own style. It covers where to put the
   iPhone, how a pour works, calibration, privacy and the safety note. It's a module in
-  `SensoApp/Onboarding/` (`.onboardingOnFirstLaunch()`), and Settings › Help › How Senso works shows it again.
+  `SensoApp/Onboarding/` (`.onboardingOnFirstLaunch()`), and Settings › Help › How Sensow works shows it again.
 - **Home screen:** a large labelled Settings button (at least 64 pt tall) replaces the small cup icon.
 - **Leaving mid-pour:** iOS stops the microphone when Sensow leaves the screen. Sensow now ends the pour
   cleanly and says so when you come back.

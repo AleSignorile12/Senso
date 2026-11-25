@@ -54,7 +54,7 @@ Also:
 - **Apple Watch.** The Watch mirrors the pour and taps your wrist faster as the cup fills, so you can follow without looking or listening. Turn the Digital Crown to set the stop level.
 - **Cups.** Save your favourite cups and calibrate each one with a single pour (empty to full, then tap **Full**). Later pours into that cup are more accurate.
 - **Camera (optional, off by default).** Sensow looks for the cup so a pour is recognised a little sooner. Before the pour, spoken tips help you point the iPhone at it: "Move the phone left", "Move closer", "Cup centred".
-- **Onboarding.** A welcome sheet on first launch, in Apple's own style, explains where to put the iPhone, how a pour works, calibration, privacy and safety. Settings › Help › How Senso works shows it again.
+- **Onboarding.** A welcome sheet on first launch, in Apple's own style, explains where to put the iPhone, how a pour works, calibration, privacy and safety. Settings › Help › How Sensow works shows it again.
 - **Settings:** cups and calibration, stop level, spoken guidance on/off, start listening when Sensow opens, the optional camera, help, acknowledgements, and support by email.
 
 Sensow is an aid, not a guarantee. The level can be wrong, especially with cups you haven't calibrated, in noisy rooms, or with thick liquids. The app says so.
@@ -217,7 +217,7 @@ The iPhone's visual spec is the **"FINAL DES. Almost Purple"** design: white scr
 - **Onboarding** uses Apple's native welcome-sheet style: system fonts, symbol + title + subtitle rows, a prominent Continue button.
 - **App icon:** a blue wave on pale blue (iPhone and Watch).
 
-Additions to the design: the Settings button, and a Full button that replaces the number during a calibration pour. On the Watch, the Ready title says "Open Senso on iPhone" when the iPhone can't be reached, and shows the new stop level for a moment while you turn the Digital Crown. There is no Stop button, as designed: swipe down, the VoiceOver Stop action, Magic Tap or the Watch stops a pour.
+Additions to the design: the Settings button, and a Full button that replaces the number during a calibration pour. On the Watch, the Ready title says "Open Sensow on iPhone" when the iPhone can't be reached, and shows the new stop level for a moment while you turn the Digital Crown. There is no Stop button, as designed: swipe down, the VoiceOver Stop action, Magic Tap or the Watch stops a pour.
 
 ---
 

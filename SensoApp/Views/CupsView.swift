@@ -137,16 +137,16 @@ struct CupsView: View {
                     // A tick per 5 % step, so the level can be set by feel.
                     .sensoryFeedback(.selection, trigger: store.targetPercent)
                     Toggle("Spoken guidance", isOn: $store.speechEnabled)
-                    Toggle("Start listening when Senso opens", isOn: $store.autoStart)
+                    Toggle("Start listening when Sensow opens", isOn: $store.autoStart)
                     Toggle("Use the camera to find the cup", isOn: $store.cameraHelp)
                 } header: {
                     Text("Alert")
                 } footer: {
-                    Text("You can also say “Start pouring with Senso”, or add Start pouring to Control Center or the Action Button.")
+                    Text("You can also say “Start pouring with Sensow”, or add Start pouring to Control Center or the Action Button.")
                 }
 
                 Section("Help") {
-                    Button("How Senso works") { showingIntro = true }
+                    Button("How Sensow works") { showingIntro = true }
                     Link("Contact support by email", destination: Self.supportMail)
                     NavigationLink("Acknowledgements") { AcknowledgementsView() }
                 }
@@ -168,7 +168,7 @@ struct CupsView: View {
     }
 
     /// Support happens by email from inside the app, so there's no support website to run.
-    private static let supportMail = URL(string: "mailto:alessandrosignorile06@gmail.com?subject=Senso%20support")!
+    private static let supportMail = URL(string: "mailto:alessandrosignorile06@gmail.com?subject=Sensow%20support")!
 
     private func calibrationText(_ calibration: FillCalibration?) -> LocalizedStringKey {
         switch calibration {

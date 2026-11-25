@@ -7,7 +7,7 @@ Sensow collects no personal data. Nothing you do in Sensow is sent to the develo
 ## Microphone
 
 Sensow listens only while you are pouring with it: after you tap Fill up, start it with Siri, the Action
-Button or Control Center, or turn on "Start listening when Senso opens". It analyses the sound on your iPhone,
+Button or Control Center, or turn on "Start listening when Sensow opens". It analyses the sound on your iPhone,
 in real time, to tell how full your cup is. The audio is never recorded, saved or sent anywhere.
 
 ## Camera (optional, off by default)

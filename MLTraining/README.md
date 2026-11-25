@@ -1,6 +1,6 @@
-# Senso ML training
+# Sensow ML training
 
-This folder trains the Core ML models the Senso app loads. It runs on a **Mac** only, because Create ML is macOS-only. The app never trains anything.
+This folder trains the Core ML models the Sensow app loads. It runs on a **Mac** only, because Create ML is macOS-only. The app never trains anything.
 
 The app ships with `SensoSoundClassifier_v3`, trained on commercial-use public data (below). Without a bundled model it falls back to a DSP heuristic and labels itself **"DSP Mode (Uncalibrated)"**.
 
@@ -99,12 +99,12 @@ The app's **Data Collection** screen records clips in exactly this layout, with 
 
 To use it:
 
-1. Run Senso from Xcode (a Debug build: the App Store and TestFlight builds don't include Data Collection). On the start screen, tap the small waveform button at the top right.
+1. Run Sensow from Xcode (a Debug build: the App Store and TestFlight builds don't include Data Collection). On the start screen, tap the small waveform button at the top right.
 2. Pick the labels, tap **Start recording**, pour, tap **Stop**. Clips shorter than 1 second aren't saved.
 3. Tap a clip to play it back, rename it, change its labels, or delete it. Changing the sound label moves the clip to that folder.
 4. Tap **Export dataset (.zip)** and AirDrop it to your Mac. Unzip it, then copy the class folders into `Dataset/`. Copy them into `TestDataset/` instead if that batch is your held-out test set.
 
-The clips are also in the iPhone's Files app under **On My iPhone › Senso › Dataset**.
+The clips are also in the iPhone's Files app under **On My iPhone › Sensow › Dataset**.
 
 ## 2. Keep a separate test set
 

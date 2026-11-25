@@ -53,12 +53,12 @@ struct DataCollectionView: View {
                 }
 
                 Section {
-                    ShareLink(item: DatasetArchive(root: recorder.root), preview: SharePreview("Senso dataset")) {
+                    ShareLink(item: DatasetArchive(root: recorder.root), preview: SharePreview("Sensow dataset")) {
                         Label("Export dataset (.zip)", systemImage: "square.and.arrow.up")
                     }
                     .disabled(recorder.recordings.isEmpty || recorder.isRecording)
                 } footer: {
-                    Text("Unzip on your Mac and copy the class folders into MLTraining/Dataset. The clips are also in the Files app under On My iPhone › Senso › Dataset.")
+                    Text("Unzip on your Mac and copy the class folders into MLTraining/Dataset. The clips are also in the Files app under On My iPhone › Sensow › Dataset.")
                 }
             }
             .navigationTitle("Data Collection")

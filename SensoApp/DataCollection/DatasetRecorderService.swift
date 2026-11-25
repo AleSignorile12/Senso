@@ -65,7 +65,7 @@ final class DatasetRecorderService {
         await audio.start { buffer, _ in writer.write(buffer) }
         guard audio.state == .running else {
             message = audio.state == .permissionDenied
-                ? String(localized: "Microphone access is off. Turn it on in Settings › Senso.")
+                ? String(localized: "Microphone access is off. Turn it on in Settings › Sensow.")
                 : String(localized: "The microphone isn't available right now.")
             return
         }

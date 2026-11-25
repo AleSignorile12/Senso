@@ -66,14 +66,14 @@ final class PourFeedback {
         let text = switch calibration {
         case nil: String(localized: "That pour was too short to measure. Try again with an empty cup.")
         case let calibration? where calibration.hasPitch: String(localized: "Cup calibrated.")
-        case _?: String(localized: "Saved the pour time. Senso couldn't hear this cup's pitch, so the level will be rough.")
+        case _?: String(localized: "Saved the pour time. Sensow couldn't hear this cup's pitch, so the level will be rough.")
         }
         say(text, urgent: true)
     }
 
     /// Back on screen after iOS stopped a pour in the background.
     func announceStoppedInBackground() {
-        say(String(localized: "Senso stopped listening when it left the screen. Tap Fill up to start again."), urgent: true)
+        say(String(localized: "Sensow stopped listening when it left the screen. Tap Fill up to start again."), urgent: true)
     }
 
     // MARK: Haptics

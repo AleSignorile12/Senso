@@ -14,7 +14,7 @@ struct OnboardingView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 36) {
-                Text("Welcome to Senso")
+                Text("Welcome to Sensow")
                     .font(.largeTitle.bold())
                     .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
@@ -24,11 +24,11 @@ struct OnboardingView: View {
                     row("iphone.gen3", "Place your iPhone by the cup",
                         "Bottom edge facing the cup: that’s where the microphone is.")
                     row("drop.fill", "Tap Fill up and pour",
-                        "Senso tells you how full the cup is and says “Stop!” in time to stop.")
+                        "Sensow tells you how full the cup is and says “Stop!” in time to stop.")
                     row("cup.and.saucer.fill", "Calibrate your cups",
                         "Do it once per cup in Settings for a more accurate level.")
                     row("hand.raised.fill", "Private by design",
-                        "Senso will ask to use the microphone. Sound is analysed on your iPhone and never saved.")
+                        "Sensow will ask to use the microphone. Sound is analysed on your iPhone and never saved.")
                     row("exclamationmark.triangle.fill", "An aid, not a guarantee",
                         "Take extra care with hot drinks.")
                 }

@@ -20,6 +20,6 @@ struct StartPouringControl: ControlWidget {
             }
         }
         .displayName("Start pouring")
-        .description("Opens Senso and starts listening.")
+        .description("Opens Sensow and starts listening.")
     }
 }

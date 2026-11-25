@@ -1,8 +1,8 @@
-![Senso: Pour with confidence](.github/banner.gif)
+![Sensow: Pour with confidence](.github/banner.gif)
 
-# Senso: Pouring Assistant
+# Sensow: Pouring Assistant
 
-**Hear when your cup is full.** Senso is an iPhone and Apple Watch app that helps blind and low-vision people pour drinks without overflowing. Put the iPhone next to the cup and start pouring. Senso listens to the liquid, works out how full the cup is from the sound, and says "Stop! Glass is full" early enough for you to stop in time.
+**Hear when your cup is full.** Sensow is an iPhone and Apple Watch app that helps blind and low-vision people pour drinks without overflowing. Put the iPhone next to the cup and start pouring. Sensow listens to the liquid, works out how full the cup is from the sound, and says "Stop! Glass is full" early enough for you to stop in time.
 
 <p align="center">
   <img src="AppStore/Screenshots/iPhone-en/1-ready.png" width="19%" alt="Ready screen with the Fill Up button">
@@ -44,20 +44,20 @@
 
 ## What it does
 
-1. **Start.** Tap **Fill Up**, say *"Start pouring with Senso"*, press the Action Button, or use the Control Center control. Senso says "Listening. Start pouring when you're ready."
-2. **Pour.** Senso hears the liquid start ("Pouring.") and speaks the level at 25, 50, 75 and 85 %.
+1. **Start.** Tap **Fill Up**, say *"Start pouring with Sensow"*, press the Action Button, or use the Control Center control. Sensow says "Listening. Start pouring when you're ready."
+2. **Pour.** Sensow hears the liquid start ("Pouring.") and speaks the level at 25, 50, 75 and 85 %.
 3. **High alert.** From 70 % the screen switches to the alert state and a short earcon plays.
-4. **Stop.** When the projected level reaches your target (90 % by default, 70–100 % in Settings), Senso plays the stop sound and says "Stop! Glass is full."
+4. **Stop.** When the projected level reaches your target (90 % by default, 70–100 % in Settings), Sensow plays the stop sound and says "Stop! Glass is full."
 
 Also:
 
 - **Apple Watch.** The Watch mirrors the pour and taps your wrist faster as the cup fills, so you can follow without looking or listening. Turn the Digital Crown to set the stop level.
 - **Cups.** Save your favourite cups and calibrate each one with a single pour (empty to full, then tap **Full**). Later pours into that cup are more accurate.
-- **Camera (optional, off by default).** Senso looks for the cup so a pour is recognised a little sooner. Before the pour, spoken tips help you point the iPhone at it: "Move the phone left", "Move closer", "Cup centred".
-- **Onboarding.** A welcome sheet on first launch, in Apple's own style, explains where to put the iPhone, how a pour works, calibration, privacy and safety. Settings › Help › How Senso works shows it again.
-- **Settings:** cups and calibration, stop level, spoken guidance on/off, start listening when Senso opens, the optional camera, help, acknowledgements, and support by email.
+- **Camera (optional, off by default).** Sensow looks for the cup so a pour is recognised a little sooner. Before the pour, spoken tips help you point the iPhone at it: "Move the phone left", "Move closer", "Cup centred".
+- **Onboarding.** A welcome sheet on first launch, in Apple's own style, explains where to put the iPhone, how a pour works, calibration, privacy and safety. Settings › Help › How Sensow works shows it again.
+- **Settings:** cups and calibration, stop level, spoken guidance on/off, start listening when Sensow opens, the optional camera, help, acknowledgements, and support by email.
 
-Senso is an aid, not a guarantee. The level can be wrong, especially with cups you haven't calibrated, in noisy rooms, or with thick liquids. The app says so.
+Sensow is an aid, not a guarantee. The level can be wrong, especially with cups you haven't calibrated, in noisy rooms, or with thick liquids. The app says so.
 
 ---
 
@@ -129,11 +129,11 @@ Pure logic on the main actor: no audio, no UI. States: `ready → preparing → 
   Reaction time covers the alert starting, the person reacting and the tail of the stream: 0.9 s with speech, 0.75 s with the Watch (a tap starts sooner than speech).
 - **No made-up numbers.** Fill estimates older than 1 s are dropped, and the screen shows "—" instead of a number.
 - The engine emits `PourEvent`s (`listening`, `pouringDetected`, `pouringPaused`, `milestone(n)`, `approachingTarget`, `complete`, `lostMicrophone`, `unavailable`) that the feedback layer reacts to.
-- If Senso leaves the screen mid-pour, iOS stops the mic. Senso ends the pour cleanly and says so when you come back.
+- If Sensow leaves the screen mid-pour, iOS stops the mic. Sensow ends the pour cleanly and says so when you come back.
 
 ### 5. Feedback (`SensoApp/Feedback/PourFeedback.swift`)
 
-- **One voice at a time:** VoiceOver announcements when VoiceOver is on, otherwise Senso's own `AVSpeechSynthesizer`, never both.
+- **One voice at a time:** VoiceOver announcements when VoiceOver is on, otherwise Sensow's own `AVSpeechSynthesizer`, never both.
 - **Earcons** generated in code mark the high-alert band and the stop.
 - **The iPhone vibrates only when it isn't listening** (start, stop, glass full, errors). Vibration travels through the table into the cup and the microphone, so while pouring the Watch's taps carry the level.
 
@@ -146,7 +146,7 @@ Pure logic on the main actor: no audio, no UI. States: `ready → preparing → 
 
 ### 7. Hands-free start (`SharedIntents/`, `SensoControls/`, `SensoApp/Intents/`)
 
-`StartPouringIntent` is one App Intent behind Siri ("Start pouring with Senso"), Shortcuts, the Action Button and the Control Center / Lock Screen control (`SensoControls` widget extension). It opens the app, and the root view starts a pour, even on a cold launch. There's also an option to start listening as soon as Senso opens.
+`StartPouringIntent` is one App Intent behind Siri ("Start pouring with Sensow"), Shortcuts, the Action Button and the Control Center / Lock Screen control (`SensoControls` widget extension). It opens the app, and the root view starts a pour, even on a cold launch. There's also an option to start listening as soon as Sensow opens.
 
 ### 8. Camera help (`SensoApp/Camera/CameraFraming.swift`)
 
@@ -160,7 +160,7 @@ The bundled model, **`SensoSoundClassifier_v3`**, is a Create ML `MLSoundClassif
 
 ### Training data: commercial-use only
 
-Senso is meant for the App Store, so the shipped model uses only data that allows commercial use: **3,207 FSD50K clips licensed CC0 or CC BY**.
+Sensow is meant for the App Store, so the shipped model uses only data that allows commercial use: **3,207 FSD50K clips licensed CC0 or CC BY**.
 
 - **Pouring:** every CC0/CC BY "Pour" and "Fill (with liquid)" clip (359).
 - **Not pouring:** dishes, cutlery, microwave, frying, boiling, speech, music, cupboards, doors, typing, footsteps, clinking glass and more. Taps, sinks and trickling water are left out, because they can sound like a real pour.
@@ -217,7 +217,7 @@ The iPhone's visual spec is the **"FINAL DES. Almost Purple"** design: white scr
 - **Onboarding** uses Apple's native welcome-sheet style: system fonts, symbol + title + subtitle rows, a prominent Continue button.
 - **App icon:** a blue wave on pale blue (iPhone and Watch).
 
-Additions to the design: the Settings button, and a Full button that replaces the number during a calibration pour. On the Watch, the Ready title says "Open Senso on iPhone" when the iPhone can't be reached, and shows the new stop level for a moment while you turn the Digital Crown. There is no Stop button, as designed: swipe down, the VoiceOver Stop action, Magic Tap or the Watch stops a pour.
+Additions to the design: the Settings button, and a Full button that replaces the number during a calibration pour. On the Watch, the Ready title says "Open Sensow on iPhone" when the iPhone can't be reached, and shows the new stop level for a moment while you turn the Digital Crown. There is no Stop button, as designed: swipe down, the VoiceOver Stop action, Magic Tap or the Watch stops a pour.
 
 ---
 
@@ -230,7 +230,7 @@ Accessibility is the product, not an add-on.
 - **Dynamic Type** on every text style, including the expanded brand font.
 - **Reduce Motion:** the liquid stays still and screens only fade.
 - **Never colour alone:** every state is also spelled out in words.
-- **Honest numbers:** no estimate shows "—", and Senso says so out loud if it can't hear the level during a pour.
+- **Honest numbers:** no estimate shows "—", and Sensow says so out loud if it can't hear the level during a pour.
 - **Multimodal:** speech, earcons and Watch haptics, each usable on its own.
 
 ---
@@ -266,7 +266,7 @@ Accessibility is the product, not an add-on.
 ## Project structure
 
 ```
-Senso/
+Sensow/
 ├── SensoApp/                    iPhone app
 │   ├── Audio/                   Microphone, session, interruptions
 │   ├── ML/                      Sound classifier (Core ML + DSP fallback), fill estimator, bundled v3 model, credits
@@ -293,7 +293,7 @@ Senso/
 
 ## Build and test
 
-Requirements: Xcode 27.2 (iOS / watchOS 27.2 SDKs) on macOS. Open `Senso.xcodeproj`, pick the **Senso** scheme, and run. Signing uses your own team; bundle IDs are `com.alessandrosignorile.Senso`, `.watchkitapp`, and the control extension.
+Requirements: Xcode 27.2 (iOS / watchOS 27.2 SDKs) on macOS. Open `Senso.xcodeproj`, pick the **Senso** scheme, and run. Signing uses your own team; bundle IDs are `com.alessandrosignorile.Senso`, `.watchkitapp`, and the control extension. The project, targets and bundle IDs keep the app's original name, Senso; the app is called Sensow on the App Store and under its icon.
 
 From the command line (if `xcode-select` points at the Command Line Tools, prefix each command with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`):
 

@@ -1,4 +1,4 @@
-# Publishing Senso
+# Publishing Sensow
 
 What's already in the project, and what only you can do (accounts, devices, uploads).
 
@@ -14,16 +14,16 @@ What's already in the project, and what only you can do (accounts, devices, uplo
 - **App icon:** iPhone and Watch, 1024 px, opaque (`Assets.xcassets/AppIcon`). It's a simple blue wave
   on pale blue from the water design's colours. Replace the PNG if you have a designed one.
 - **Version:** 1.0, build 1. Raise `CURRENT_PROJECT_VERSION` (the project's build number) for every upload.
-- **Export compliance:** `ITSAppUsesNonExemptEncryption = NO`, because Senso uses no encryption of its own.
+- **Export compliance:** `ITSAppUsesNonExemptEncryption = NO`, because Sensow uses no encryption of its own.
   App Store Connect won't ask about it on each upload.
 - **Privacy manifest:** `SensoApp/PrivacyInfo.xcprivacy` says no tracking and no collected data. It also
-  declares the three system APIs Senso uses and why: UserDefaults, system uptime and file dates.
+  declares the three system APIs Sensow uses and why: UserDefaults, system uptime and file dates.
 - **Data Collection:** only in Debug builds run from Xcode. The App Store and TestFlight builds don't show it.
 - **Onboarding:** a welcome sheet on first launch, in Apple's own style. It covers where to put the
   iPhone, how a pour works, calibration, privacy and the safety note. It's a module in
-  `SensoApp/Onboarding/` (`.onboardingOnFirstLaunch()`), and Settings › Help › How Senso works shows it again.
+  `SensoApp/Onboarding/` (`.onboardingOnFirstLaunch()`), and Settings › Help › How Sensow works shows it again.
 - **Home screen:** a large labelled Settings button (at least 64 pt tall) replaces the small cup icon.
-- **Leaving mid-pour:** iOS stops the microphone when Senso leaves the screen. Senso now ends the pour
+- **Leaving mid-pour:** iOS stops the microphone when Sensow leaves the screen. Sensow now ends the pour
   cleanly and says so when you come back.
 - **Support:** Settings › Help › Contact support by email opens an email to you. There's no support
   website to run.
@@ -43,14 +43,15 @@ What's already in the project, and what only you can do (accounts, devices, uplo
    URL for both. Support itself happens by email from the app (Settings › Help › Contact support by email),
    so there's no website to run. The quickest way to get a URL:
    1. Go to gist.github.com and sign in with a free GitHub account.
-   2. Name the file `senso-privacy-and-support.md`.
+   2. Name the file `sensow-privacy-and-support.md`.
    3. Paste the file's contents, then choose Create public gist.
    4. Copy the address: it's your Privacy Policy URL and your Support URL.
 
    The email address in it is also in the app's support button (`CupsView.swift`, `supportMail`). If it
    ever changes, change it in both places.
-3. **Check the name.** "Senso" may already be taken on the App Store. App Store Connect tells you when you
-   create the app. `metadata.md` uses "Senso: Pouring Assistant".
+3. **The name.** The app is called Sensow: "Sensow: Pouring Assistant" on the App Store (`metadata.md`)
+   and Sensow under its icon. The Xcode project, targets and bundle IDs keep the original name, Senso.
+   Nobody sees them, so they stay.
 
 ## In App Store Connect (appstoreconnect.apple.com)
 
@@ -60,14 +61,14 @@ What's already in the project, and what only you can do (accounts, devices, uplo
    - Bundle ID: `com.alessandrosignorile.Senso`
    - Primary language: English
    - SKU: anything, for example `senso-ios`
-2. **Fill in the store listing.** Copy the text from `metadata.md`. Senso is English only.
+2. **Fill in the store listing.** Copy the text from `metadata.md`. Sensow is English only.
 3. **Category:** Utilities as primary, Lifestyle as secondary. Pick what fits you best.
 4. **App Privacy:** choose "Data Not Collected". This matches the privacy manifest and the policy.
 5. **Age rating:** answer "None" or "No" to everything, which gives 4+.
 6. **Accessibility nutrition labels:** claim only what you checked on a device. Apple asks whether the
    common tasks work fully with each feature.
 
-   | Feature | Senso | Notes |
+   | Feature | Sensow | Notes |
    | --- | --- | --- |
    | VoiceOver | Designed for it | Test every screen, iPhone and Watch |
    | Voice Control | Likely | Every button has a label; test "Tap Fill up" |
@@ -76,7 +77,7 @@ What's already in the project, and what only you can do (accounts, devices, uplo
    | Differentiate Without Color Alone | Yes | States are always spelled out |
    | Reduced Motion | Yes | With Reduce Motion on, the liquid stays still and screens just fade |
    | Dark Interface | No | Ready and Done are always light, so don't claim it |
-   | Captions, Audio Descriptions | Not applicable | Senso has no video |
+   | Captions, Audio Descriptions | Not applicable | Sensow has no video |
 
 7. **Screenshots** (required): ready to upload in `Screenshots/`.
    - **iPhone 6.9″:** `Screenshots/iPhone-en/`, 6 PNGs at 1320 × 2868 px: Ready, pouring at 42%, the 86%
@@ -109,7 +110,8 @@ What's already in the project, and what only you can do (accounts, devices, uplo
    3. In Organizer, choose Distribute App › App Store Connect › Upload.
 
    The Watch app and the Control Center extension are inside the same upload.
-9. **Test with TestFlight first:** internal testing, on your own iPhone.
+9. **Test with TestFlight first:** internal testing on your own iPhone, then external testers if you want.
+   The text for TestFlight's Test Information is in `metadata.md`.
 10. **Submit for review.** Paste `review-notes.md` into App Review Information › Notes. Apple needs no
     demo account.
 
@@ -122,7 +124,7 @@ What's already in the project, and what only you can do (accounts, devices, uplo
   - remove `PourRuntimeSession` from `WatchLink.swift`.
 
   The Watch then taps only while its screen is awake.
-- **Safety:** the listing and the app present Senso as an aid, not a guarantee. Keep it that way, and
+- **Safety:** the listing and the app present Sensow as an aid, not a guarantee. Keep it that way, and
   don't promise it prevents burns or spills.
 - **Accuracy:** the sound model is trained on public recordings. It hasn't been tested on an iPhone in a
   real kitchen yet. Record a few of your own pours, then run `evaluate-sound` (`MLTraining/README.md`)
